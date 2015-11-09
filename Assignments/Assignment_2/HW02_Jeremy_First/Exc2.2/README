@@ -1,0 +1,5 @@
+This program is dependent on the boost shared libraries! If they are not installed, this program will not run. 
+As long as the boost libraries have not moved on Stampede, this should compile on stampede, but the Makefile will need to be updated if they move. 
+
+
+After building. ./Exc2.2 --help for more information. 

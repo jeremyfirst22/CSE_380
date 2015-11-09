@@ -1,0 +1,8 @@
+Go ahead and test the -fast option as well for problem 0
+
+problem 3: We will want to do this calculation in log space. This will prevent overflow when calculating factorial of larger integers. 
+We will also likely need to fit a curve to compute or extrapolate. Or write a new test that will keep going untill les than 0.1% accuracy. Relative erro not absolute error. 
+
+Use a linear fit extrapolation
+
+It will happen less than 1000

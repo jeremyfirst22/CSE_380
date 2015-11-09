@@ -1,0 +1,4 @@
+10  DefIntegral: -0.968986 	 AbsError: 0.010062 
+50  DefIntegral: -0.959324 	 AbsError: 0.000400 
+100  DefIntegral: -0.959024 	 AbsError: 0.000100 
+200  DefIntegral: -0.958949 	 AbsError: 0.000025 

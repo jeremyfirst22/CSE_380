@@ -1,0 +1,180 @@
+\chapter{Solid Body Heat Conduction}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Mathematical Model}
+\subsection{Governing Equations}
+The transient temperature distribution $T\left(t\right)$ in a conducting medium is given by~\cite{cfmht}
+\begin{equation}
+  \rho c_p \pdv{T}{t} = \grad{}\cdot\left(k \grad{T}\right) + Q
+  \label{eq:pde_thermal}
+\end{equation}
+where $\rho$, $c_p$, and $k$ are the material density, specific heat, and thermal conductivity, respectively, and $t$ denotes time.  In this work we restrict our attention to the case of a collection of isotropic materials, in which the specific heat and conductivity are both functions of temperature within a given material.  $Q$ denotes a volumetric heat source term, which may be a function of position, time, and temperature.
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Boundary Conditions\label{sec:bcs}}
+The exposed surface of the heatshield is subjected to a convective heat flux whose magnitude is taken from the CFD analysis.  The remainder of the surfaces are treated as adiabatic.  The CFD analysis was performed for an isothermal wall condition.  The resulting heat flux distribution and fixed wall temperature were used to derive a heat transfer coefficient $h$ 
+\begin{equation}
+  h = \frac{\dot{q}_w}{T_0 - T_w}
+\end{equation}
+where $T_0$ is the freestream total temperature, $T_w$ is the wall temperature assumed in the CFD analysis, and $\dot{q}_w$ is the heat transfer computed from the CFD simulation.  The heat transfer coefficient varies spatially over the exposed surface of the model, but this spatial distribution is assumed constant during the course of a run.  The transient heat transfer is then applied in the thermal analysis and is a function of surface temperature:
+\begin{equation}
+  \dot{q}\left(t\right) = h \left(T_0 - T\left(t\right)\right)
+\end{equation}
+This mixed boundary condition is used in the boundary integral in Equation~\eqref{eq:pde_weak_qwall} to weakly impose the specified heat flux on the wetted surface of the model.  The adiabatic condition is also enforced weakly on the remaining surfaces by simply omitting the boundary integral term in the computation.
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Numerical Method}
+\subsection{Weak Formulation}
+A symmetric Galerkin weak form for Equation~\eqref{eq:pde_thermal} follows from multiplying by a suitable test function~$v$, integrating over the domain~$\Omega$, and applying Gauss' divergence theorem~\cite{becker_carey_oden_volume_1}.  The weak form is then: Find $T \in H^1$ satisfying the given initial and boundary conditions such that
+\begin{equation}
+  \int_\Omega \left(\rho c_p \pdv{T}{t}\,v +k \grad{T}\cdot\grad{v} + Q\,v\right)\; d\Omega  - \oint_{\partial\Omega_N} \left(k\grad{T}\cdot \hat{\bv{n}} \right)v\; d\Gamma = 0
+  \label{eq:pde_weak}
+\end{equation}
+$\forall v \in H_0^1$. The boundary integral term may be replaced with Fourier's law:
+\begin{equation}
+\dot{\bv{q}} = -k \grad{T}
+\end{equation}
+which allows~\eqref{eq:pde_weak} to be rewritten in terms of the normal component of the heat flux $\dot{q}_w = \dot{\bv{q}}\cdot \hat{\bv{n}}$:
+\begin{equation}
+  \int_\Omega \left(\rho c_p \pdv{T}{t}\,v +k \grad{T}\cdot\grad{v} + Q\,v\right)\; d\Omega  + \oint_{\partial\Omega_N} \dot{q}_w\,v\; d\Gamma = 0
+  \label{eq:pde_weak_qwall}
+\end{equation}
+$\forall v \in H_0^1$. This weak form is then discretized with a standard finite element approach and implemented in the parallel adaptive \texttt{libMesh}~\cite{libMeshPaper} library.  Piecewise linear finite elements are used for the spatial discretization, while the temporal discretization is performed with a centered Crank-Nicolson scheme~\cite{crank_nicolson}.  The resulting scheme is second-order accurate in both space and time.  The  nonlinearity introduced by the material properties is treated with a standard Newton scheme. These details of the implementation will be discussed in the ensuing sections.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Finite Element Formulation}
+We can discretize~\eqref{eq:pde_weak_qwall} by expanding the temperature in terms of a finite dimensional basis:
+\begin{equation}
+  T_h\left(\bv{x}\right) = \sum_{j=1}^{\text{\# nodes}} T_j \phi_j\left(\bv{x}\right)
+\end{equation}
+where we have introduced the subscript $()_h$ to denote a finite dimensional approximation. It immediately follows then that
+\begin{equation}
+  \grad{T}_h\left(\bv{x}\right) = \sum_{j=1}^{\text{\# nodes}} T_j \grad{\phi}_j\left(\bv{x}\right)
+\end{equation}
+
+We can now constuct the semidiscrete finite element formulation corresponding to~\eqref{eq:pde_weak_qwall}:  Find $T \in H^1_h$ satisfying the given initial and boundary conditions such that
+\begin{equation}
+  \int_\Omega \left(\rho c_p \pdv{T_h}{t}\,v +k \grad{T_h}\cdot\grad{\phi_i} + Q\,\phi_i\right)\; d\Omega  + \oint_{\partial\Omega_N} \dot{q}_w\,\phi_i\; d\Gamma = 0
+  \label{eq:pde_weak_qwall_disc}
+\end{equation}
+for $i=1,2,\ldots,\text{\# nodes}$.  This equation is said to be semidiscrete because it has been discretized in space but not time.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Time Discretization}
+We choose to discretize Equation~\eqref{eq:pde_weak_qwall_disc} about the point $t_{n+\theta}$, which is given by
+\begin{equation}
+  t_{n+\theta} \equiv t_{n} + \theta\left(t_{n+1} - t_{n}\right)
+\end{equation}
+where $\theta\in[0,1]$. The familiar Crank-Nicolson scheme~\cite{crank_nicolson} corresponds to the case of $\theta=1/2$.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Linearization}
+Consider the steady heat conduction equation with variable material properties
+\begin{equation}
+  \label{eq:adam_heat}
+ -\grad{}\cdot\left(k\left(T\right) \grad{T}\right) = 0
+\end{equation}
+Recall that $T$ may be expanded in the finite element basis as
+\begin{equation}
+  T\left(x\right) = \sum_{j=1}^{\text{\# nodes}} T_j \phi_j\left(x\right)
+\end{equation}
+from which it immediately follows that 
+\begin{equation}
+  \grad{T}\left(x\right) = \sum_{j=1}^{\text{\# nodes}} T_j \grad{\phi}_j\left(x\right)
+\end{equation}
+Also node that
+\begin{align}  
+  \pdv{}{T_j}\left(T\left(x\right)\right) &= \phi_j\left(x\right) \label{eq:adam_dT} \\
+  \pdv{}{T_j}\left(\grad{T}\left(x\right)\right) &= \grad{\phi_j}\left(x\right) \label{eq:adam_dgradT} \\
+\end{align}
+Now consider the residual statement for the $i^{th}$ test function, which results from multiplying~\eqref{eq:adam_heat} by $\phi_i$ and integrating by parts in the usual way:
+\begin{equation}
+  \mathcal{R}_i\left(T\right) = k\left(T\right)\,\grad{T}\cdot\grad{\phi}_i
+\end{equation}
+Since this residual is nonlinear in $T_j$ because of the $\alpha\left(T\right)$ term, it is natural to solve the nonlinear system iteratively using Newton's method, in which we solve
+\begin{equation}
+  \pdv{\bv{\mathcal{R}}^l}{\bv{T}^l}\, \delta\bv{T}^{l+1} = -\bv{\mathcal{R}}^{l}
+\end{equation}
+where $\bv{\mathcal{R}}^l$ and $\pdv{\bv{\mathcal{R}}^l}{\bv{T}^l}$ denote the residual vector and its Jacobian evaluated at the current temperature $\bv{T}^l$, and we seek an updated temperature $\bv{T}^{l+1} \equiv \bv{T}^l + \delta\bv{T}^{l+1}$.
+
+The relevant terms for the system matrix are the components of the Jacobian:
+\begin{align}
+  K_{ij} & \equiv \pdv{\mathcal{R}_i}{T_j} \\
+        &= \pdv{}{T_j}\left[k\left(T\right)\,\grad{T}\cdot\grad{\phi}_i\right] \\
+        &= k\left(T\right) \left[\pdv{}{T_j}\left(\grad{T}\right)\right] \cdot\grad{\phi}_i +
+           \pdv{k}{T}\pdv{T}{T_j} \,\grad{T}\cdot\grad{\phi}_i           
+\end{align}
+which, upon substituting~\eqref{eq:adam_dT} and~\eqref{eq:adam_dgradT} gives 
+\begin{equation}
+  K_{ij} = k\left(T^l\right) \grad{\phi}_j\cdot\grad{\phi}_i +
+           \pdv{k\left(T^l\right)}{T}\,\phi_j\,\grad{T}^l\cdot\grad{\phi}_i
+\end{equation}
+where the superscript $()^l$ has been reinserted to denote the value of the temperature at the current iterate level.  The second term is the new term that arises in the system matrix due to the nonlinearity.  Note that as a consequence the linear system is no longer symmetric.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Manufactured Solutions}
+Recall Equation~\eqref{eq:pde_thermal}:
+\begin{equation*}
+  \rho c_p \pdv{T}{t} = \grad{}\cdot\left(k \grad{T}\right) + Q
+\end{equation*}
+In this section we seek to define forcing functions $Q=Q\left(\bv{x},t\right)$ such that $T=T\left(\bv{x},t\right)$ using the so-called method of manufactured solutions.  This approach requires defining the desired solution $T$ and substituting it into the homogeneous form of the differential equation such that an analytic forcing function may be found:
+\begin{equation}
+  Q = \rho c_p \pdv{T}{t} - \grad{}\cdot\left(k \grad{T}\right)
+  \label{eq:thermal_mms}
+\end{equation}
+We will create a hierarchy of solutions which test various features of the governing equation.  To this end, let us introduce a specified temperature distribution $T=T\left(\bv{x},t\right)$:
+\begin{equation}
+  T\left(\bv{x},t\right) = \cos\left(A_x x + A_t t\right)\times\cos\left(B_y y + B_t t\right)\times\cos\left(C_z z + C_t t\right)\times \cos\left(D_t t\right)
+\end{equation}
+This temperature distribution is infinitely differentiable.  A steady distribution is recovered when $A_t=B_t=C_t=D_t=0$.  A 1D distribution results when $B_y=C_z=0$, and a 2D distribution results for $C_z=0$.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Steady Conduction}
+For the steady case Equation~\eqref{eq:thermal_mms} takes on the particulary simple form
+\begin{equation}
+  Q =  - \grad{}\cdot\left(k \grad{T}\right)
+  \label{eq:thermal_mms_steady}
+\end{equation}
+
+\subsubsection{Constant Thermal Conductivity}
+One further simplification to~\eqref{eq:thermal_mms_steady} can be made in the case of constant thermal conductivity $k$:
+\begin{equation}
+  Q =  - k \Delta T
+  \label{eq:thermal_mms_steady_kconst}
+\end{equation}
+
+\subsubsection{Variable Thermal Conductivity}
+For the more general case we have $k=k\left(T\right)$, and Equation~\eqref{eq:thermal_mms_steady} is the proper one for determining $Q$.  Of particular interest is the case in which $k$ is specified as a polynomial in $T$ since this is a common formulation used in engineering analysis.  Specifically, we then have
+\begin{equation}
+  k = k_0 + k_1 T + k_2 T^2
+\end{equation}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Transient Conduction}
+\subsubsection{Constant Material Properties}
+One limiting case for transient conduction is the case of constant material properties, that is $\rho, c_p$, and $k$ are all constant. Under this assumption~\eqref{eq:thermal_mms} may be expressed as
+\begin{equation}
+  Q = \rho c_p \pdv{T}{t} - k \Delta T
+  \label{eq:thermal_mms_constprop}
+\end{equation}
+
+\subsubsection{Variable Material Properties}
+In general the density, specific heat, and thermal conductivity could all be variable, and the complete form~\eqref{eq:thermal_mms} must be used to determine $Q$.  For applictations to metallic or ceramic materials of engineering interest, however, the density is to good approximation constant.  Further, it is common that $k$ and $c_p$ are specified as polynomials in temperature.  That is, 
+\begin{align}
+  \rho &= \text{const} \\ 
+   c_p &= c_{p,0}+ c_{p,1} T + c_{p,2} T^2 \\
+     k &= k_0 + k_1 T + k_2 T^2
+\end{align}
+
+
+\bibliography{paper}
+\bibliographystyle{unsrt}

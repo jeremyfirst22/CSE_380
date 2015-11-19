@@ -1,0 +1,146 @@
+\documentclass[11pt,openright]{NASA}
+
+\usepackage{diss}
+\usepackage{amsmath,amsfonts}
+\usepackage{subfigure}
+\usepackage{layout}
+\usepackage[
+pdftex,
+bookmarks=true,
+bookmarksopenlevel=3,
+colorlinks=true,
+linkcolor=black,
+citecolor=black,
+filecolor=black,
+urlcolor=black,
+plainpages=false,
+pdfpagelabels,
+pdftitle={Modeling Document for the HyFlow Suite of Simulation Tools},
+pdfauthor={Benjamin S. Kirk, Adam J.\ Amar, Roy Stogner, Todd Oliver, Karl Schultz, Paul Bauman}
+pdfkeywords={SUPG, finite element, compressible flows, shock capturing, inviscid flux discretization, validation},
+]
+{hyperref}
+\usepackage{times}
+\usepackage{units}
+\usepackage{fancyhdr}
+\usepackage{chapterbib}
+\usepackage{float}
+\floatstyle{ruled}
+\newfloat{algorithm}{thp}{loa}[chapter]
+\floatname{algorithm}{Algorithm}
+
+
+% Define commands to assure consistent treatment throughout document
+\newcommand{\eqnref}[1]{(\ref{#1})}
+\newcommand{\class}[1]{\texttt{#1}}
+\newcommand{\package}[1]{\texttt{#1}}
+\newcommand{\file}[1]{\texttt{#1}}
+\newcommand{\BibTeX}{\textsc{Bib}\TeX}
+
+
+%  Fill in the following catagories between the braces {}
+\title{The \textsc{HyFlow} Hypersonic Flow Simulation Toolkit \\ \vspace{1em}  \large{A Collection of Tools for Simulating Aerothermodynamics Applications for Flows in Thermochemical Nonequilibrium and Associated Thermal Protection System Material Response}}
+\author{Benjamin S.\ Kirk\\
+        Adam J.\ Amar\\
+        Roy Stogner\\
+	Paul Bauman\\
+        Karl Schultz\\
+        Todd Oliver} % list all the author names for the RDP
+
+\AuthorAffiliation{NASA Lyndon B. Johnson Space Center\\
+                   The University of Texas at Austin}
+\NasaCenter{Lyndon B.\ Johnson Space Center\\Houston, Texas 77058}
+\Type{TP}                    % TM, TP, CR, CP, SP, TT
+\SubjectCategory{}           % two digit number
+\Distribution{Standard}      % E.g., Standard
+\LNumber{12456}              % Langley L-number
+\Number{217743}              % Report number
+\Month{10}                   % two digit number
+\Year{2009}                  % four digit number
+\SubjectTerms{FIN-S}         % 4-5 comma separated words
+\Pages{200}                  % all the pages from the front to back covers
+\DatesCovered{6/2007 --10/2009} % 10/2000--9/2002
+\ContractNumber{}            % NAS1-12345
+\GrantNumber{}               % NAG1-1234
+\ProgramElementNumber{}
+\ProjectNumber{}             % NCC1-123
+\TaskNumber{}                % Task 123
+\WorkUnitNumber{}            % 123-45-67-89
+\SupplementaryNotes{}
+\Acknowledgment{}            % optional back of title page section
+
+\abstract{This paper considers the streamline-upwind Petrov-Galerkin (SUPG) method applied to the thermochemical nonequilibrium Navier-Stokes equations in conservation-variable form. The governing equations for a non-ionized reacting mixture of perfect gases in thermal nonequilibrium are reviewed. The spatial discretization, time discretization, and solution scheme are briefly discussed.  The performance of the formulation is then investigated by considering a number of classical benchmark problems in reacting flows. Mesh and iterative convergence are studied in detail for the case of inviscid, dissociating nitrogen flow about a circular cylinder.  The performance of various linearization strategies is also examined in this context.}                  % suggested 200 words
+
+%
+% Double-space for submission
+%\def\baselinestretch{2}
+\renewcommand{\bibname}{References}
+
+\begin{document}
+
+\cleardoublepage
+\setcounter{tocdepth}{3}
+\setcounter{secnumdepth}{3}
+
+\tableofcontents
+\listoffigures
+\listoftables
+\listof{algorithm}{List of Algorithms}
+%\addcontentsline{toc}{chapter}{List of Algorithms}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\cleardoublepage
+%\onehalfspacing
+%\pagestyle{headings}
+\pagestyle{fancy}
+\fancyhead[LE]{\textsc{\nouppercase{\leftmark}}}
+\fancyhead[RE]{}
+\fancyhead[LO]{}
+\fancyhead[RO]{\textsc{\nouppercase{\rightmark}}}
+%\fancyfoot[C]{\thepart--\thepage}
+\fancyfoot[C]{\thepage}
+\fancyfoot[LO,RE]{\textit{{\color{red}{built \timestamp}}}}
+
+
+\pagenumbering{arabic}
+
+\layout
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \clearpage
+% \begin{align*}
+%   &\mbox{Let }f(x): \mathbb{R}\rightarrow\mathbb{R} \\
+%   f(x + \Delta x) &= f(x) + f^\prime(x) (\Delta x) + \frac{f^{\prime\prime}(x)}{2} (\Delta x)^2 + \frac{f^{\prime\prime\prime}(x)}{6} (\Delta x)^3 + \ldots \\
+%   &\mbox{If $\Delta x \equiv \sqrt{-1}h = ih$, then} \\
+%   f(x + ih) &= f(x) + f^\prime(x) (ih) + \frac{f^{\prime\prime}(x)}{2} (ih)^2 + \frac{f^{\prime\prime\prime}(x)}{6} (ih)^3 + \ldots \\
+%             &= f(x) + f^\prime(x) (ih) - \frac{f^{\prime\prime}(x)}{2} (h^2) - \frac{f^{\prime\prime\prime}(x)}{6} (ih^3) + \ldots \\
+% &\mbox{and} \\
+% \Im\left[f(x+ih)\right] &=  f^\prime(x)h - \frac{f^{\prime\prime\prime}(x)}{6} h^3 + \ldots \\
+% &\mbox{so} \\
+% f^\prime(x) &= \frac{\Im\left[f(x+ih)\right]}{h} + \mathcal{O}(h^2)
+% \end{align*}
+% \clearpage
+\part{Application Overview and Background Information}
+\include{chapters/problem_class}
+\include{chapters/motivation}
+\include{chapters/methodology}
+
+\part{Mathematical Models and Associated Discretizations}
+\include{chapters/introduction}
+\include{chapters/compressible_navier_stokes}
+\include{chapters/solid_body_heat_conduction}
+\include{chapters/ablation}
+\include{chapters/conclusions}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\clearpage
+\part{Appendices}
+\appendix
+\fancyfoot[C]{\thepart--\thepage}
+\include{appendices/compressible_navier_stokes-appendix}
+\include{appendices/solid_body_heat_conduction-appendix}
+\include{appendices/ablation-appendix}
+
+\end{document}

@@ -1,0 +1,835 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Compressible Navier-Stokes}
+\section{Model Parameters}
+
+In this section we list the parameters employed in the physical models listed in Section~\ref{sec:comp_ns_math_model}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Chemical \& Vibrational Excitation Data}
+
+\begin{table}[hbtp]
+  \begin{center}
+    \caption{Chemical Species Physical Parameters~\cite{wright_thesis}}
+    \vspace{1em}
+    \begin{tabular}{|l|ccc|} \hline
+      Species  & $M_s$ & $h^0_s$ & $\theta_{vs}$ \\
+            & $\left(\unitfrac{kg}{kmol}\right)$ &  $\left(\unitfrac{J}{kg}\right)\; \times 10^{-6}$       & $\left(\unit{K}\right)$ \\ \hline \hline
+      N$_2$ & 28.016  &  0.     & 3,395.         \\
+      O$_2$ & 32.000  &  0.     & 2,239.         \\
+      NO    & 30.008  &  2.996  & 2,817.         \\
+      N     & 14.008  &  33.622 &  --            \\
+      O     & 16.000  &  15.420 &  --            \\ \hline
+    \end{tabular}
+  \end{center}
+\end{table}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\clearpage
+\subsection{Reaction Rates}
+\begin{table}[hbtp]
+  \begin{center}
+    \caption{Forward Reaction Rate Coefficients~\cite{park_future_nasa_missions_I} (-- denotes identical values)}
+    \vspace{1em}
+    \begin{tabular}{|l|l|ccc|} \hline
+      Reaction  &  $\mathcal{M}$ & $C_f$ & $\eta_r$  & $E_a$  \\ 
+                & & $\unitfrac{m^3}{kmol\,s}$ &   & $\unitfrac{cal}{mol}$  \\ \hline \hline
+  $\text{N}_2 + \mathcal{M} \rightleftharpoons 2\text{N} + \mathcal{M}$ & N$_2$ & $7\times 10^{18}$ & $-1.6$  & $224,815.2$ \\
+                                                                        & O$_2$ & $7\times 10^{18}$ & --      & --          \\
+                                                                        & NO    & $7\times 10^{18}$ & --      & --          \\
+                                                                        & N     & $3\times 10^{19}$ & --      & --          \\ 
+                                                                        & O     & $3\times 10^{19}$ & --      & --          \\ \hline
+  $\text{O}_2 + \mathcal{M} \rightleftharpoons 2\text{O} + \mathcal{M}$ & N$_2$ & $2\times 10^{18}$ & $-1.5$  & $118,167.$  \\
+                                                                        & O$_2$ & $2\times 10^{18}$ & --      & --          \\
+                                                                        & NO    & $2\times 10^{18}$ & --      & --          \\
+                                                                        & N     & $1\times 10^{19}$ & --      & --          \\
+                                                                        & O     & $1\times 10^{19}$ & --      & --          \\ \hline
+  $\text{NO} + \mathcal{M}  \rightleftharpoons \text{N} + \text{O} + \mathcal{M}$ & N$_2$ & $5\times 10^{12}$ & $0$  & $149,943.$ \\
+                                                                                  & O$_2$ & -- & --  & -- \\
+                                                                                  & NO    & -- & --  & -- \\
+                                                                                  & N     & -- & --  & -- \\
+                                                                                  & O     & -- & --  & -- \\ \hline
+  $\text{N}_2 + \text{O}    \rightleftharpoons \text{NO} + \text{N}$  &  & $6.4\times 10^{14}$ & $-1$ & $76,262.$ \\  \hline
+  $\text{NO} + \text{O}     \rightleftharpoons \text{O}_2 + \text{N}$ &  & $8.4\times 10^{9}$  & $0$  & $38,628.$ \\ \hline  
+   \end{tabular}
+  \end{center}
+\end{table}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Electronic Excitation}
+\begin{table}[htp]
+  \begin{center}
+    \caption{Electronic Excitation:  Excitation Temperatures \& Degeneracies}
+    \vspace{1em}
+    \begin{tabular}{|l|cc||l|cc|} \hline
+      Species  & Degeneracy  & $\theta^l_{es}$          & Species  & Degeneracy  & $\theta^l_{es}$ \\ 
+               & of the mode & $\left(\unit{K}\right)$ &          & of the mode & $\left(\unit{K}\right)$ \\ \hline \hline
+{\bf N$_2$} &        1  & $0.00000$              & {\bf N}  &	   4  & $0.00000$ \\
+   &        3  & $7.22316\times 10^{4}$ &    &	  10  & $2.76647\times 10^{4}$ \\
+   &        6  & $8.57786\times 10^{4}$ &    &	   6  & $4.14931\times 10^{4}$ \\
+   &        6  & $8.60503\times 10^{4}$ &    &        & \\
+   &        3  & $9.53512\times 10^{4}$ &    &        & \\
+   &        1  & $9.80564\times 10^{4}$ &    &        & \\
+   &        2  & $9.96827\times 10^{4}$ &    &        &  \\
+   &        2  & $1.04898\times 10^{5}$ &    &        &  \\
+   &        5  & $1.11649\times 10^{5}$ &    &        &  \\
+   &        1  & $1.22584\times 10^{5}$ &    &        &  \\
+   &        6  & $1.24886\times 10^{5}$ &    &        &  \\
+   &        6  & $1.28248\times 10^{5}$ &    &        &  \\
+   &       10  & $1.33806\times 10^{5}$ &    &        &  \\
+   &        6  & $1.40430\times 10^{5}$ &    &        &  \\
+   &        6  & $1.50496\times 10^{5}$ &    &        &  \\ \hline
+{\bf O$_2$} &	   3  & $0.00000$              & {\bf O}  &	   5  & $0.00000$ \\
+   &	   2  & $1.13916\times 10^{4}$   &   &	   3  & $2.27708\times 10^{2}$ \\
+   &	   1  & $1.89847\times 10^{4}$   &   &	   1  & $3.26569\times 10^{2}$ \\
+   &	   1  & $4.75597\times 10^{4}$    &   &	   5  & $2.28303\times 10^{4}$ \\
+   &        6  & $4.99124\times 10^{4}$   &   &	   1  & $4.86199\times 10^{4}$ \\
+   &	   3  & $5.09227\times 10^{4}$  &    &        &  \\
+   &	   3  & $7.18986\times 10^{4}$ &    &        &   \\ \hline
+{\bf NO} &       4  & $0.00000$ &    &        &   \\
+   &        8  & $5.46735\times 10^{4}$ &    &        &   \\
+   &         2  & $6.31714\times 10^{4}$ &    &        &   \\
+   &        4  & $6.59945\times 10^{4}$ &    &        &   \\
+   &        4  & $6.90612\times 10^{4}$ &    &        &   \\
+   &        4  & $7.05000\times 10^{4}$ &    &        &   \\
+   &        4  & $7.49106\times 10^{4}$ &    &        &   \\
+   &        2  & $7.62888\times 10^{4}$ &    &        &   \\
+   &        4  & $8.67619\times 10^{4}$ &    &        &   \\
+   &        2  & $8.71443\times 10^{4}$ &    &        &   \\
+   &        4  & $8.88608\times 10^{4}$ &    &        &   \\
+   &        4  & $8.98176\times 10^{4}$ &    &        &   \\
+   &        2  & $8.98845\times 10^{4}$ &    &        &   \\
+   &        2  & $9.04270\times 10^{4}$ &    &        &   \\
+   &        2  & $9.06428\times 10^{4}$ &    &        &   \\
+   &        4  & $9.11176\times 10^{4}$ &    &        &   \\ \hline
+    \end{tabular}
+  \end{center}
+\end{table}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\clearpage
+\subsection{Blottner Species Viscosity Coefficients}
+
+Recall that the viscosity curve fits from Blottner are of the form
+\begin{equation}
+  \mu_s\left(T\right) = 0.1 \exp\left[\left(A_s \ln T + B_s\right) \ln T + C_s\right] \;\;\; \left(\unitfrac{kg}{m\cdot sec}\right)
+\end{equation}
+where the coefficients for the five species considered in this work are~\cite{wright_thesis}
+\begin{table}[hbtp]
+  \begin{center}
+    \caption{Species Viscosity Parameters}
+    \vspace{1em}
+    \begin{tabular}{|l|ccc|} \hline
+      Species  & $A_s$ & $B_s$ & $C_s$ \\ \hline \hline
+      N$_2$ & 0.0268142 & 0.317784   & -11.3156 \\
+      O$_2$ & 0.044929  & -0.0826158 & -9.20195 \\
+      NO    & 0.0436378 & -0.0335511 & -9.57674 \\
+      N     & 0.0115572 & 0.603168   & -12.4327 \\
+      O     & 0.0203144 & 0.42944    & -11.6031 \\ \hline
+    \end{tabular}
+  \end{center}
+\end{table}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\clearpage
+\section{Jacobian Matrices}
+\subsection{Inviscid Flux Jacobians}
+In this section we derive the inviscid flux Jacobian matrices.  Recall
+\begin{gather*}
+    \bv{U} =
+    \begin{bmatrix}
+      \rho_s \\
+      \rho u \\
+      \rho v \\
+      \rho w \\
+      \rho E \\
+      \rho  e_V 
+    \end{bmatrix},\;\;
+    \bv{F}_1 =
+    \begin{bmatrix}
+      \rho_s u&       \\
+      \rho uu &\hspace{-1em}+ P \\
+      \rho uv& \\
+      \rho uw& \\
+      \rho u H& \\
+      \rho u e_V&
+    \end{bmatrix},\;\;
+    \bv{F}_2 =
+    \begin{bmatrix}
+      \rho_s v&       \\
+      \rho vu& \\
+      \rho vv &\hspace{-1em}+ P \\
+      \rho vw& \\
+      \rho v H& \\
+      \rho v e_V&
+    \end{bmatrix},\;\;
+    \bv{F}_3 =
+    \begin{bmatrix}
+      \rho_s w&       \\
+      \rho wu& \\
+      \rho wv& \\
+      \rho ww  &\hspace{-1em}+ P \\
+      \rho w H& \\
+      \rho w e_V&
+    \end{bmatrix}
+\end{gather*}
+We seek expressions $\bt{A}_i \equiv \pdv{\bv{F}_i}{\bv{U}}$.  To accomplish this we must express each inviscid flux term as a function of the conserved variables and take the requisite partial derivatives.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{Large}
+  \[ \hspace{-23em}  \pdv{}{\bv{U}}\left(\rho_s u_i\right):\]
+\end{Large}
+\begin{align*}
+  \rho_s u_i &= \left(\frac{\rho_s}{\rho}\right)\,\rho u_i  \\
+             &= \left(\frac{\rho_s}{\sum_{r=1}^{N_s}\rho_r}\right)\,\rho u_i  
+\end{align*}
+Then
+\begin{equation}
+  \boxed{\pdv{}{\rho_r}\left(\rho_s u_i\right) = \left(\delta_{sr} - \frac{\rho_s}{\rho}\right)u_i}
+\end{equation}
+and
+\begin{equation}
+  \boxed{\pdv{}{\rho u_i}\left(\rho_s u_i\right) = \frac{\rho_s}{\rho}}
+\end{equation}
+The partial derivatives with respect to all other components in $\bv{U}$ are zero.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{Large}
+  \[ \hspace{-23em}  \pdv{}{\bv{U}}\left(\rho u_i u_j\right):\]
+\end{Large}
+\begin{align*}
+  \rho u_i u_j &= \frac{\left(\rho u_i\right)\left(\rho u_j\right)}{\rho}  \\
+               &= \frac{\left(\rho u_i\right)\left(\rho u_j\right)}{\sum_{r=1}^{N_s}\rho_r} 
+\end{align*}
+Then
+\begin{equation}
+  \boxed{\pdv{}{\rho_s}\left(\rho u_i u_j\right) = -u_i u_j}
+\end{equation}
+\begin{equation}
+  \boxed{\pdv{}{\rho u_i}\left(\rho u_i u_j\right) = u_j}
+\end{equation}
+\begin{equation}
+  \boxed{\pdv{}{\rho u_j}\left(\rho u_i u_j\right) = u_i}
+\end{equation}
+The partial derivatives with respect to all other components in $\bv{U}$ are zero.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{Large}
+  \[ \hspace{-27em}  \pdv{P}{\bv{U}}:\]
+\end{Large}
+\textbf{\emph{Thermal Nonequilibrium:}}
+\begin{align*}
+  P &= \sum_{s=1}^{N_s} \rho_s R_s T \\
+    &= \rho \left(\sum_{s=1}^{N_s} c_s R_s\right) T \\
+    &= \rho \bar{R} T
+\end{align*}
+Recall that
+\begin{align*}
+  \rho E &= \frac{1}{2}\rho\left(\bv{u}\cdot\bv{u}\right) + \sum_{s=1}^{N_s} \rho_s C^{\text{tr}}_{v,s} T + \rho e_V  + \sum_{r=1}^{N_s} \rho_r h^0_r \\
+         &= \frac{\left(\rho u\right)^2+\left(\rho v\right)^2+\left(\rho w\right)^2}{2 \rho} + \rho \bar{C^{\text{tr}}_v} T + \rho e_V  + \sum_{r=1}^{N_s} \rho_r h^0_r \\
+  \rho T &= \frac{1}{\bar{C^{\text{tr}}_v}}\left[\rho E - \frac{\left(\rho u\right)^2+\left(\rho v\right)^2+\left(\rho w\right)^2}{2 \sum_{r=1}^{N_s}\rho_r} - \rho e_V  - \sum_{r=1}^{N_s} \rho_r h^0_r\right]
+\end{align*}
+where $\bar{C^{\text{tr}}_v}=\sum_{s=1}^{N_s} c_s C^{\text{tr}}_{v,s}$. The pressure is then given by
+\begin{align}
+  P &= \frac{\bar{R}}{\bar{C^{\text{tr}}_v}}\left[\rho E - \frac{\left(\rho u\right)^2+\left(\rho v\right)^2+\left(\rho w\right)^2}{2 \sum_{r=1}^{N_s}\rho_r} - \rho e_V  - \sum_{r=1}^{N_s} \rho_r h^0_r\right] \nonumber \\
+  &= \left(\frac{\sum_{r=1}^{N_s} \rho_r R_r}{\sum_{r=1}^{N_s} \rho_r C^{\text{tr}}_{v,r}}\right)\left[\rho E - \frac{\left(\rho u\right)^2+\left(\rho v\right)^2+\left(\rho w\right)^2}{2 \sum_{r=1}^{N_s}\rho_r} - \rho e_V  - \sum_{r=1}^{N_s} \rho_r h^0_r\right] \label{eq:pressure_noneq}
+\end{align}
+Then
+\begin{equation}
+  \boxed{\pdv{}{\rho_s}\left(P\right) = \left(R_s - \frac{C^{\text{tr}}_{v,s}}{\bar{C^{\text{tr}}_v}}\bar{R}\right)\,T + \frac{\bar{R}}{\bar{C^{\text{tr}}_v}}\left[\frac{1}{2}\left(u^2 + v^2 +w^2\right) - h^0_s\right]}
+  \label{eq:dPdrhos_tcneq}
+\end{equation}
+\begin{equation}
+  \boxed{\pdv{}{\rho u_i}\left(P\right) = -u_i\frac{\bar{R}}{\bar{C^{\text{tr}}_v}} }
+\end{equation}
+\begin{equation}
+  \boxed{\pdv{}{\rho E}\left(P\right) = \frac{\bar{R}}{\bar{C^{\text{tr}}_v}} }
+  \label{eq:dPdrE_tcneq}
+\end{equation}
+\begin{equation}
+  \boxed{\pdv{}{\rho e_V}\left(P\right) = -\frac{\bar{R}}{\bar{C^{\text{tr}}_v}} }
+  \label{eq:dPdreV_tcneq}
+\end{equation}
+
+\textbf{\emph{Thermal equilibrium:}}
+In thermal equilibrium Equation~\eqref{eq:pressure_noneq} takes on the form
+\begin{align*}
+  P &=\left(\frac{\sum_{r=1}^{N_s} \rho_r R_r}{\sum_{r=1}^{N_s} \rho_r C^{\text{tr}}_{v,r}}\right)\left[\rho E - \frac{\left(\rho u\right)^2+\left(\rho v\right)^2+\left(\rho w\right)^2}{2 \sum_{r=1}^{N_s}\rho_r} - \rho e_V  - \sum_{r=1}^{N_s} \rho_r h^0_r\right] \\
+  &=\left(\frac{\sum_{r=1}^{N_s} \rho_r R_r}{\sum_{r=1}^{N_s} \rho_r C^{\text{tr}}_{v,r}}\right)\left[\rho E - \frac{\left(\rho u\right)^2+\left(\rho v\right)^2+\left(\rho w\right)^2}{2 \sum_{r=1}^{N_s}\rho_r} - \sum_{r=1}^{N_s}\rho_r e^{\text{vib}}_s\left(T\right) - \sum_{r=1}^{N_s}\rho_r e^{\text{elec}}_s\left(T\right) - \sum_{r=1}^{N_s} \rho_r h^0_r\right]
+\end{align*}
+Then
+\begin{equation*}
+  \pdv{P}{\rho_s} =\left(R_s - \frac{C^{\text{tr}}_{v,s}}{\bar{C^{\text{tr}}_v}}\bar{R}\right)\,T + \frac{\bar{R}}{\bar{C^{\text{tr}}_v}}\left[\frac{1}{2}\left(u^2 + v^2 +w^2\right) - e^{\text{vib}}_s - \sum_{r=1}^{N_s} \rho_r \pdv{e^{\text{vib}}_r}{\rho_s}- e^{\text{elec}}_s - \sum_{r=1}^{N_s} \rho_r \pdv{e^{\text{elec}}_r}{\rho_s}- h^0_s\right]
+\end{equation*}
+Now
+\begin{align*}
+  \pdv{e^{\text{vib}}_r}{\rho_s} &= \pdv{e^{\text{vib}}_r}{T}\pdv{T}{\rho_s} \\
+                                 &=      C^{\text{vib}}_{v,r}\pdv{T}{\rho_s}
+\end{align*}
+and it can be shown that
+\begin{equation*}
+  \pdv{T}{\rho_s} = \frac{1}{\rho \bar{R}}\left(\pdv{P}{\rho_s} - T R_s\right) \\
+\end{equation*}
+so then
+\begin{equation*}
+  \sum_{r=1}^{N_s}\rho_r \pdv{e^{\text{vib}}_r}{\rho_s} = \frac{\bar{C^{\text{vib}}_v}}{\bar{R}}\left(\pdv{P}{\rho_s} - R_s T\right)
+\end{equation*}
+and similarly
+\begin{equation*}
+  \sum_{r=1}^{N_s}\rho_r \pdv{e^{\text{elec}}_r}{\rho_s} = \frac{\bar{C^{\text{elec}}_v}}{\bar{R}}\left(\pdv{P}{\rho_s} - R_s T\right)
+\end{equation*}
+which can be used to show
+\begin{equation}
+  \boxed{\pdv{}{\rho_s}\left(P\right) =\left(R_s - \frac{C^{\text{tr}}_{v,s}}{\bar{C}_v}\bar{R}\right)\,T + \frac{\bar{R}}{\bar{C}_v}\left[\frac{1}{2}\left(u^2 + v^2 +w^2\right) - e^{\text{vib}}_s - e^{\text{elec}}_s - h^0_s\right]}
+  \label{eq:dPdrhos_teq}
+\end{equation}
+where $\bar{C}_v = C^{\text{tr}}_v + C^{\text{vib}}_v + C^{\text{elec}}_v$.  The remainder of the derivatives are then similar to the nonequilibrium case:
+\begin{equation}
+  \boxed{\pdv{}{\rho u_i}\left(P\right) = -u_i\frac{\bar{R}}{\bar{C}_v} }
+\end{equation}
+\begin{equation}
+  \boxed{\pdv{}{\rho E}\left(P\right) = \frac{\bar{R}}{\bar{C}_v} }
+  \label{eq:dPdrE_teq}
+\end{equation}
+where $\bar{C}_v$ takes the place of $\bar{C}^{\text{tr}}_v$.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{Large}
+  \[ \hspace{-23em}  \pdv{}{\bv{U}}\left(\rho u_i H\right):\]
+\end{Large}
+\begin{align*}
+  \rho u_i H &= \rho u_i \left(E + \frac{P}{\rho}\right) \\
+             &= \frac{\left(\rho u_i\right)\left(\rho E + P\right)}{\rho}  \\
+             &= \frac{\left(\rho u_i\right)\left(\rho E + P\right)}{\sum_{r=1}^{N_s}\rho_r}  \\
+             &= \frac{\left(\rho u_i\right)\left(\rho E\right)}{\sum_{r=1}^{N_s}\rho_r}  + \frac{\left(\rho u_i\right)\,P}{\sum_{r=1}^{N_s}\rho_r} 
+\end{align*}
+Then
+\begin{equation}
+  \boxed{\pdv{}{\rho_s}\left(\rho u_i H\right) = \left(\pdv{P}{\rho_s}-H\right)\,u_i}
+\end{equation}
+\begin{equation}
+  \boxed{\pdv{}{\rho u_i}\left(\rho u_i H\right) = H}
+\end{equation}
+\begin{equation}
+  \boxed{\pdv{}{\rho E}\left(\rho u_i H\right) = \left(\pdv{P}{\rho E} + 1\right)\,u_i}
+\end{equation}
+and
+\begin{equation}
+  \boxed{\pdv{}{\rho e_V}\left(\rho u_i H\right) = \pdv{P}{\rho e_V}\,u_i}
+\end{equation}
+The partial derivatives with respect to all other components in $\bv{U}$ are zero.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{Large}
+  \[ \hspace{-23em}  \pdv{}{\bv{U}}\left(\rho u_i e_V\right):\]
+\end{Large}
+\begin{align*}
+  \rho u_i e_V &= \frac{\left(\rho u_i\right)\left(\rho e_V\right)}{\rho}  \\
+               &= \frac{\left(\rho u_i\right)\left(\rho e_V\right)}{\sum_{r=1}^{N_s}\rho_r} 
+\end{align*}
+Then
+\begin{equation}
+  \boxed{\pdv{}{\rho_s}\left(\rho u_i e_V\right) = -u_i e_V}
+\end{equation}
+\begin{equation}
+  \boxed{\pdv{}{\rho u_i}\left(\rho u_i e_V\right) = e_V}
+\end{equation}
+\begin{equation}
+  \boxed{\pdv{}{\rho e_V}\left(\rho u_i e_V\right) = u_i}
+\end{equation}
+The partial derivatives with respect to all other components in $\bv{U}$ are zero.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{Large}
+  \[ \hspace{-23em}  \bt{A}_1 = \pdv{}{\bv{U}}\left(\bv{F}_1\right):\]
+\end{Large}
+\begin{equation}
+  \label{eq:inv_jac_A1}
+  %\bt{A}_1 = 
+  \large
+  \begin{bmatrix}
+    \left(\delta_{sr} - \frac{\rho_s}{\rho}\right)u & \frac{\rho_s}{\rho}      & 0                     & 0                     & 0                                 & 0                    \\
+    \pdv{P}{\rho_s} - u^2                            & 2u - \pdv{P}{\rho E}\,u  & - \pdv{P}{\rho E}\,v  & - \pdv{P}{\rho E}\,w  & \pdv{P}{\rho E}                    & \pdv{P}{\rho e_V}    \\
+                    - uv                             & v                        & u                     & 0                     & 0                                  & 0                    \\
+                    - uw                             & w                        & 0                     & u                     & 0                                  & 0                    \\
+    \left(\pdv{P}{\rho_s} - H\right)u              & H - \pdv{P}{\rho E}\,u^2 & - \pdv{P}{\rho E}\,uv & - \pdv{P}{\rho E}\,uw & \left(\pdv{P}{\rho E}+1\right)u  & \pdv{P}{\rho e_V}\,u \\
+    -e_V\,u                                          & e_V                      & 0                     & 0                     & 0                                  & u
+  \end{bmatrix}
+\end{equation}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{Large}
+  \[ \hspace{-23em}  \bt{A}_2 = \pdv{}{\bv{U}}\left(\bv{F}_2\right):\]
+\end{Large}
+\begin{equation}
+  \label{eq:inv_jac_A2}
+  %\bt{A}_2 = 
+  \large
+  \begin{bmatrix}
+    \left(\delta_{sr} - \frac{\rho_s}{\rho}\right)v & 0 & \frac{\rho_s}{\rho} & 0 & 0 & 0 \\
+                    - uv  & v & u & 0 & 0 & 0 \\
+    \pdv{P}{\rho_s} - v^2 & - \pdv{P}{\rho E}\,u & 2v - \pdv{P}{\rho E}\,v & - \pdv{P}{\rho E}\,w & \pdv{P}{\rho E} & \pdv{P}{\rho e_V} \\
+                    - vw  & 0 & w & v & 0 & 0 \\
+    \left(\pdv{P}{\rho_s} - H\right)v & - \pdv{P}{\rho E}\,uv & H - \pdv{P}{\rho E}\,v^2 & - \pdv{P}{\rho E}\,vw & \left(\pdv{P}{\rho E}+1\right)v  & \pdv{P}{\rho e_V}\,v \\
+    -e_V\,v & 0 & e_V & 0 & 0 & v
+  \end{bmatrix}
+\end{equation}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{Large}
+  \[ \hspace{-23em}  \bt{A}_3 = \pdv{}{\bv{U}}\left(\bv{F}_3\right):\]
+\end{Large}
+\begin{equation}
+  \label{eq:inv_jac_A3}
+  %\bt{A}_3 = 
+  \large
+  \begin{bmatrix}
+    \left(\delta_{sr} - \frac{\rho_s}{\rho}\right)w & 0 & 0 & \frac{\rho_s}{\rho} & 0 & 0 \\
+                    - uw  & w & 0 & u & 0 & 0 \\
+                    - vw  & 0 & w & v & 0 & 0 \\
+    \pdv{P}{\rho_s} - w^2 & - \pdv{P}{\rho E}\,u & - \pdv{P}{\rho E}\,v & 2w - \pdv{P}{\rho E}\,w & \pdv{P}{\rho E} & \pdv{P}{\rho e_V} \\
+    \left(\pdv{P}{\rho_s} - H\right)w & -\pdv{P}{\rho E}\,uw & - \pdv{P}{\rho E}\,vw & H - \pdv{P}{\rho E}\,w^2 & \left(\pdv{P}{\rho E}+1\right)w  & \pdv{P}{\rho e_V}\,w \\
+    -e_V\,w & 0 & 0 & e_V & 0 & w
+  \end{bmatrix}
+\end{equation}
+In the above matrices~\eqref{eq:inv_jac_A1}--\eqref{eq:inv_jac_A3} the first row and column correspond to the $N_s$ species continuity equations, with the subscripts $s$ and $r$ denoting row $s$ and column $r$.
+
+\subsection{Viscous Flux Jacobians\label{app:viscous_flux_jacobians}}
+
+\subsubsection*{Viscous Stress Momentum Contributions:} Recall Equation~\eqref{eq:stress_tensor}
+\begin{equation*}
+  \bv{\tau} = \mu\left(\grad{\bv{u}} + \tgrad{\bv{u}}\right) -\frac{2}{3}\mu \left(\grad{}\cdot\bv{u}\right)\bt{I}
+\end{equation*}
+Consider the prototypical term $\pdv{u_i}{x_j}$, which occurs repeatedly.  This term may be expressed in terms of the unknown conserved variables via the chain rule:
+\begin{equation}
+  \label{eq:pdv_ui_xj}
+  \pdv{u_i}{x_j} = \pdv{u_i}{\rho_s}\pdv{\rho_s}{x_j} + \pdv{u_i}{\rho u_k}\pdv{\rho u_k}{x_j} + \pdv{u_i}{\rho E}\pdv{\rho E}{x_j} + \pdv{u_i}{\rho e_V}\pdv{\rho e_V}{x_j}    \;\;\; k=1,\ldots,\text{N}_{\text{DIM}}
+\end{equation}
+where $\text{N}_{\text{DIM}}$ is the number of spatial dimensions. Now, since
+\begin{equation*}
+  u_i = \frac{\rho u_i}{\rho} = \frac{\rho u_i}{\sum_{r=1}^{N_s} \rho_r}
+\end{equation*}
+then
+\begin{equation}
+  \pdv{}{\rho_s}\left(u_i\right) = -\frac{u_i}{\rho}
+\end{equation}
+and
+\begin{equation}
+  \pdv{}{\rho u_i}\left(u_i\right) = \frac{1}{\rho}
+\end{equation}
+while the partial derivatives with respect to all other components in $\bv{U}$ are zero.  These expressions can be combined with~\eqref{eq:pdv_ui_xj} to show that
+\begin{equation}
+  \boxed{\pdv{u_i}{x_j} = -\left(\frac{u_i}{\rho}\right)\pdv{\rho_s}{x_j} + \left(\frac{1}{\rho}\right)\pdv{\rho u_i}{x_j}}
+\end{equation}
+
+\subsubsection*{Viscous Stress Energy Contributions:} The viscous stress tensor also appears in the total energy conservation equation through the appearance of the term $\grad{}\cdot\left(\bt{\tau}\bv{u}\right)$, whose prototypical terms are of the form $\pdv{u_i}{x_j}u_k$.  Since we seek to express this in terms of the gradients of the conserved variables, the addition of the $u_k$ term does not pose a complication, hence
+\begin{equation}
+  \boxed{\pdv{u_i}{x_j}u_k = \frac{u_k}{\rho}\left(-u_i\pdv{\rho_s}{x_j} + \pdv{\rho u_i}{x_j}\right)}
+\end{equation}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection*{Thermal Diffusion:} Recall Equation~\eqref{eq:fouriers_law}, which for a two-temperature system may be expressed as
+\begin{equation*}
+  \bv{q} = -k\grad{T} - k_V\grad{T_V}
+\end{equation*}
+whose salient terms are $\pdv{T}{x_i}$ and $\pdv{T_V}{x_i}$, which may be expressed in terms of the unknown conserved variables via the chain rule:
+\begin{align}
+  \label{eq:pdv_T_xi}
+  \pdv{T}{x_i} &= \pdv{T}{\rho_s}\pdv{\rho_s}{x_i} + \pdv{T}{\rho u_k}\pdv{\rho u_k}{x_i} + \pdv{T}{\rho E}\pdv{\rho E}{x_i} + \pdv{T}{\rho e_V}\pdv{\rho e_V}{x_i}, \;\;\; k=1,\ldots,\text{N}_{\text{DIM}} \\
+  \label{eq:pdv_Tv_xi}
+  \pdv{T_V}{x_i} &= \pdv{T_V}{\rho_s}\pdv{\rho_s}{x_i} + \pdv{T_V}{\rho u_k}\pdv{\rho u_k}{x_i} + \pdv{T_V}{\rho E}\pdv{\rho E}{x_i} + \pdv{T_V}{\rho e_V}\pdv{\rho e_V}{x_i}, \;\;\; k=1,\ldots,\text{N}_{\text{DIM}}
+\end{align}
+\textbf{\emph{Thermal Nonequilibrium:}}
+Recall that
+\begin{align}
+  \rho E &= \frac{1}{2}\rho\left(\bv{u}\cdot\bv{u}\right) + \sum_{r=1}^{N_s} \rho_r C^{\text{tr}}_{v,r} T + \rho e_V  + \sum_{r=1}^{N_s} \rho_r h^0_r \nonumber \\
+         &= \frac{\left(\rho u\right)^2+\left(\rho v\right)^2+\left(\rho w\right)^2}{2 \rho} + \rho \bar{C^{\text{tr}}_v} T + \rho e_V  + \sum_{r=1}^{N_s} \rho_r h^0_r \nonumber \\
+       T &= \frac{1}{\rho \bar{C^{\text{tr}}_v}}\left[\rho E - \frac{\left(\rho u\right)^2+\left(\rho v\right)^2+\left(\rho w\right)^2}{2 \sum_{r=1}^{N_s}\rho_r} - \rho e_V  - \sum_{r=1}^{N_s} \rho_r h^0_r\right] \label{eq:temperature_noneq}
+\end{align}
+where $\bar{C^{\text{tr}}_v}=\sum_{s=1}^{N_s} c_s C^{\text{tr}}_{v,s}$. Then
+\begin{equation}
+  \label{eq:pdv_T_rhos_noneq}
+  \pdv{}{\rho_s}\left(T\right) = \frac{1}{\rho\bar{C^{\text{tr}}_v}}\left[\frac{1}{2}\left(u^2 + v^2 +w^2\right) - C^{\text{tr}}_{v,s}T - h^0_s\right]
+\end{equation}
+\begin{equation}
+  \pdv{}{\rho u_i}\left(T\right) = \frac{-u_i}{\rho\bar{C^{\text{tr}}_v}}
+\end{equation}
+\begin{equation}
+  \pdv{}{\rho E}\left(T\right) = \frac{1}{\rho\bar{C^{\text{tr}}_v}}
+\end{equation}
+\begin{equation}
+  \pdv{}{\rho e_V}\left(T\right) = \frac{-1}{\rho\bar{C^{\text{tr}}_v}}
+\end{equation}
+These expressions can be inserted into~\eqref{eq:pdv_T_xi} to give
+\begin{equation}
+  \boxed{\pdv{T}{x_i} = \left(\pdv{T}{\rho_s}\right)\pdv{\rho_s}{x_i} - \left(\frac{u_k}{\rho\bar{C^{\text{tr}}_v}}\right)\pdv{\rho u_k}{x_i} + \left(\frac{1}{\rho\bar{C^{\text{tr}}_v}}\right)\pdv{\rho E}{x_i} - \left(\frac{1}{\rho\bar{C^{\text{tr}}_v}}\right)\pdv{\rho e_V}{x_i}}\;\;\;\; k=1,\ldots,\text{N}_{\text{DIM}}
+\end{equation}
+where the term $ \left(\pdv{T}{\rho_s}\right)$ is given by~\eqref{eq:pdv_T_rhos_noneq}. Also, since 
+\begin{equation*}
+  \rho e_V = \sum_{r=1}^{N_s} \rho_r e^{\text{vib}}_r + \sum_{r=1}^{N_s} \rho_r e^{\text{elec}}_r 
+\end{equation*}
+Implicit differentiation can be used to find the unknown derivatives $\pdv{T_V}{\rho_s}$ and $\pdv{T_V}{\rho e_V}$.  All other partial derivatives are zero by inspection.
+\begin{align*}
+  \pdv{}{\rho_s}\left(\rho e_V\right) = 0 &= e^{\text{vib}}_s + \sum_{r=1}^{N_s} \rho_r \pdv{e^{\text{vib}}_r}{\rho_s} + e^{\text{elec}}_s + \sum_{r=1}^{N_s} \rho_r \pdv{e^{\text{elec}}_r}{\rho_s} \\
+                                          &= e^{\text{vib}}_s + \sum_{r=1}^{N_s} \rho_r \pdv{e^{\text{vib}}_r}{T_V}\pdv{T_V}{\rho_s} + e^{\text{elec}}_s + \sum_{r=1}^{N_s} \rho_r \pdv{e^{\text{elec}}_r}{T_V}\pdv{T_V}{\rho_s} \\
+                                          &= e^{\text{vib}}_s + \sum_{r=1}^{N_s} \rho_r C^{\text{vib}}_{v,r}\pdv{T_V}{\rho_s} + e^{\text{elec}}_s + \sum_{r=1}^{N_s} \rho_r C^{\text{elec}}_{v,r}\pdv{T_V}{\rho_s} \\
+                        \pdv{T_V}{\rho_s} &= \frac{-e^{\text{vib}}_s - e^{\text{elec}}_s}{\sum_{r=1}^{N_s} \rho_r C^{\text{vib}}_{v,r} + \sum_{r=1}^{N_s} \rho_r C^{\text{elec}}_{v,r}}
+\end{align*}
+or equivalently
+\begin{equation}
+  \pdv{}{\rho_s}\left(T_V\right) = -\frac{e_{V,s}}{\rho \bar{C}_V^V}
+\end{equation}
+where $\bar{C}_V^V$ is the mixture vibrational/electronic specific heat. Similarly
+\begin{align*}
+  \pdv{}{\rho e_V}\left(\rho e_V\right) = 1 &= \sum_{r=1}^{N_s} \rho_r \pdv{e^{\text{vib}}_r}{\rho e_V} + \sum_{r=1}^{N_s} \rho_r \pdv{e^{\text{elec}}_r}{\rho e_V} \\
+                                            &= \sum_{r=1}^{N_s} \rho_r \pdv{e^{\text{vib}}_r}{T_V}\pdv{T_V}{\rho e_V} + \sum_{r=1}^{N_s} \rho_r \pdv{e^{\text{elec}}_r}{T_V}\pdv{T_V}{\rho e_V} \\
+                                            &= \sum_{r=1}^{N_s} \rho_r C^{\text{vib}}_{v,r}\pdv{T_V}{\rho e_V} + \sum_{r=1}^{N_s} \rho_r C^{\text{elec}}_{v,r}\pdv{T_V}{\rho e_V} \\
+                          \pdv{T_V}{\rho e_V} &= \frac{1}{\sum_{r=1}^{N_s} \rho_r C^{\text{vib}}_{v,r} + \sum_{r=1}^{N_s} \rho_r C^{\text{elec}}_{v,r}}
+\end{align*}
+or equivalently
+\begin{equation}
+  \pdv{}{\rho e_V}\left(T_V\right) = \frac{1}{\rho \bar{C}_V^V}
+\end{equation}
+These expressions can then be inserted into~\eqref{eq:pdv_Tv_xi} to show
+\begin{equation}
+  \boxed{\pdv{T_V}{x_i} = \left(-\frac{e_{V,s}}{\rho \bar{C}_V^V}\right)\pdv{\rho_s}{x_i} + \left(\frac{1}{\rho \bar{C}_V^V}\right)\pdv{\rho e_V}{x_i}}
+\end{equation}
+\textbf{\emph{Thermal equilibrium:}}
+In thermal equilibrium Equation~\eqref{eq:temperature_noneq} takes on the form
+
+\begin{align*}
+  T &= \frac{1}{\rho \bar{C^{\text{tr}}_v}}\left[\rho E - \frac{\left(\rho u\right)^2+\left(\rho v\right)^2+\left(\rho w\right)^2}{2 \sum_{r=1}^{N_s}\rho_r} - \rho e_V  - \sum_{r=1}^{N_s} \rho_r h^0_r\right] \\
+    &= \frac{1}{\rho \bar{C^{\text{tr}}_v}}\left[\rho E - \frac{\left(\rho u\right)^2+\left(\rho v\right)^2+\left(\rho w\right)^2}{2 \sum_{r=1}^{N_s}\rho_r}   - \sum_{r=1}^{N_s} \rho_r e^{\text{vib}}_r   - \sum_{r=1}^{N_s} \rho_r e^{\text{elec}}_r   - \sum_{r=1}^{N_s} \rho_r h^0_r\right]
+\end{align*}
+Then
+\begin{equation*}
+  \pdv{T}{\rho_s} =\frac{1}{\rho\bar{C^{\text{tr}}_v}}\left[\frac{1}{2}\left(u^2 + v^2 +w^2\right) - e^{\text{vib}}_s - \sum_{r=1}^{N_s} \rho_r \pdv{e^{\text{vib}}_r}{\rho_s}- e^{\text{elec}}_s - \sum_{r=1}^{N_s} \rho_r \pdv{e^{\text{elec}}_r}{\rho_s}- h^0_s\right]
+\end{equation*}
+Now
+\begin{equation*}
+  \pdv{e^{\text{vib}}_r}{\rho_s} = \pdv{e^{\text{vib}}_r}{T}\pdv{T}{\rho_s} = C^{\text{vib}}_{v,r}\pdv{T}{\rho_s}
+\end{equation*}
+and similarly
+\begin{equation*}
+  \pdv{e^{\text{elec}}_r}{\rho_s} = \pdv{e^{\text{elec}}_r}{T}\pdv{T}{\rho_s} = C^{\text{elec}}_{v,r}\pdv{T}{\rho_s}
+\end{equation*}
+which can be used to show
+\begin{equation}
+  \label{eq:pdv_T_rhos_eq}
+  \pdv{}{\rho_s}\left(T\right) =\frac{1}{\rho\bar{C}_v}\left[\frac{1}{2}\left(u^2 + v^2 +w^2\right) - C^{\text{tr}}_{v,s} T - e^{\text{vib}}_s - e^{\text{elec}}_s - h^0_s\right]
+\end{equation}
+where $\bar{C}_v = C^{\text{tr}}_v + C^{\text{vib}}_v + C^{\text{elec}}_v$.  The remainder of the derivatives are then similar to the nonequilibrium case:
+\begin{equation}
+  \pdv{}{\rho u_i}\left(T\right) = \frac{-u_i}{\rho \bar{C}_v}
+\end{equation}
+\begin{equation}
+  \pdv{}{\rho E}\left(T\right) = \frac{1}{\rho \bar{C}_v}
+\end{equation}
+where $\bar{C}_v$ takes the place of $\bar{C}^{\text{tr}}_v$. Inserting these terms into~\eqref{eq:pdv_T_xi} under the conditions of thermal equilibrium gives
+\begin{equation}
+  \boxed{\pdv{T}{x_i} = \left(\pdv{T}{\rho_s}\right)\pdv{\rho_s}{x_i} - \left(\frac{u_k}{\rho\bar{C_v}}\right)\pdv{\rho u_k}{x_i} + \left(\frac{1}{\rho\bar{C_v}}\right)\pdv{\rho E}{x_i}}\;\;\;\; k=1,\ldots,\text{N}_{\text{DIM}}
+\end{equation}
+where now the term $ \left(\pdv{T}{\rho_s}\right)$ is given by~\eqref{eq:pdv_T_rhos_eq}.
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection*{Mass Diffusion:} Under the assumption that species diffusion velocities are governed by Fick's law, mass diffusion terms appear in the species continuity, total energy, and vibrational/electronic energy conservation equations.  Specifically, these terms are of the form
+\begin{itemize}
+  \item mass conservation for species $s$:
+    \begin{equation}
+      \label{eq:mass_conserv_mass_diffusion}
+      \rho \mathcal{D}_s \pdv{c_s}{x_i}
+    \end{equation}
+  \item total energy conservation:
+    \begin{equation}
+      \label{eq:tot_energy_conserv_mass_diffusion}
+      \sum_{s=1}^{N_s} \rho \mathcal{D}_s h_s\pdv{c_s}{x_i}
+    \end{equation}
+  \item vibrational/electronic energy conservation:
+    \begin{equation}
+      \label{eq:vib_energy_conserv_mass_diffusion}
+      \sum_{s=1}^{N_s} \rho \mathcal{D}_s e_{V,s}\pdv{c_s}{x_i}
+    \end{equation}
+\end{itemize}
+First consider~\eqref{eq:mass_conserv_mass_diffusion}. To determine its dependence on the conserved variable gradients it is instructive to consider the related term 
+\begin{align*}
+  \mathcal{D}_s\pdv{}{x_i}\left(\rho c_s\right) = 
+    \mathcal{D}_s\pdv{\rho_s}{x_i} 
+      &= \rho \mathcal{D}_s\pdv{c_s}{x_i} + c_s \mathcal{D}_s \pdv{\rho}{x_i} \\
+      &= \rho \mathcal{D}_s\pdv{c_s}{x_i} + c_s \mathcal{D}_s\left(\sum_{r=1}^{N_s} \pdv{\rho_r}{x_i}\right)
+\end{align*}
+which can be rearranged to show
+\begin{equation*}
+  \rho \mathcal{D}_s\pdv{c_s}{x_i} = \mathcal{D}_s\pdv{\rho_s}{x_i} - c_s \mathcal{D}_s\left(\sum_{r=1}^{N_s} \pdv{\rho_r}{x_i}\right)
+\end{equation*}
+or equivalently
+\begin{equation}
+  \boxed{\rho \mathcal{D}_s\pdv{c_s}{x_i} = \mathcal{D}_s \sum_{r=1}^{N_s} \left(\delta_{sr} - c_s\right) \pdv{\rho_r}{x_i}}
+\end{equation}
+Next consider~\eqref{eq:tot_energy_conserv_mass_diffusion}.  Proceeding in a similar fashion, it is instructive to consider the related term 
+\begin{align*}
+\mathcal{D}_s \pdv{}{x_i}\left(\rho h_s c_s\right) &= \\
+\mathcal{D}_s \pdv{}{x_i}\left(\rho_s h_s\right)   &= \rho \mathcal{D}_s h_s \pdv{c_s}{x_i} + \rho \mathcal{D}_s c_s \pdv{h_s}{x_i} + \mathcal{D}_s h_s c_s \pdv{\rho}{x_i} \\
+\mathcal{D}_s \rho_s\pdv{h_s}{x_i} + \mathcal{D}_s h_s\pdv{\rho_s}{x_i} &= \rho \mathcal{D}_s h_s \pdv{c_s}{x_i} + \mathcal{D}_s \rho_s \pdv{h_s}{x_i} + \mathcal{D}_s h_s c_s \sum_{r=1}^{N_s} \pdv{\rho_r}{x_i} \\
+\rho \mathcal{D}_s h_s \pdv{c_s}{x_i} &= \mathcal{D}_s h_s\pdv{\rho_s}{x_i} - \mathcal{D}_s h_s c_s \sum_{r=1}^{N_s} \pdv{\rho_r}{x_i}
+\end{align*}
+so then
+\begin{equation*}
+\sum_{s=1}^{N_s} \rho \mathcal{D}_s h_s \pdv{c_s}{x_i} = \sum_{s=1}^{N_s}\left(\mathcal{D}_s h_s\pdv{\rho_s}{x_i} - \mathcal{D}_s h_s c_s \sum_{r=1}^{N_s} \pdv{\rho_r}{x_i}\right)
+\end{equation*}
+or equivalently
+\begin{equation}
+  \sum_{s=1}^{N_s} \rho \mathcal{D}_s h_s \pdv{c_s}{x_i} = \sum_{s=1}^{N_s}\mathcal{D}_s h_s \left(\sum_{r=1}^{N_s}\left(\delta_{sr} - c_s \right)\pdv{\rho_r}{x_i}\right)
+  \label{eq:D_s-h_s-gradc_s_1}
+\end{equation}
+Since we desire coefficients which multiply the species density partial derivatives $\pdv{\rho_r}{x_i}$, we can rewrite~\eqref{eq:D_s-h_s-gradc_s_1} as
+\begin{equation}
+  \boxed{\sum_{s=1}^{N_s} \rho \mathcal{D}_s h_s \pdv{c_s}{x_i} = \sum_{r=1}^{N_s}\left(\sum_{s=1}^{N_s} \mathcal{D}_s h_s \left(\delta_{sr} - c_s \right)\right)\pdv{\rho_r}{x_i}}
+  \label{eq:D_s-h_s-gradc_s}
+\end{equation}
+Finally consider~\eqref{eq:vib_energy_conserv_mass_diffusion}.  By complete analogy with~\eqref{eq:tot_energy_conserv_mass_diffusion}, we can show that  
+\begin{equation}
+  \boxed{\sum_{s=1}^{N_s} \rho \mathcal{D}_s e_{V,s} \pdv{c_s}{x_i} = \sum_{r=1}^{N_s}\left(\sum_{s=1}^{N_s} \mathcal{D}_s e_{V,s} \left(\delta_{sr} - c_s \right)\right)\pdv{\rho_r}{x_i}}
+\end{equation}
+This completes the definition of the partial derivatives required to formulate the viscous flux Jacobians.
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Transformation Matrices}
+\subsection{Entropy Variable Transformation Matrix}
+
+\subsection{Total Enthalpy Shock Capturing Transformation Matrix}
+Recall that
+\begin{gather*}
+    \bv{U} =
+    \begin{bmatrix}
+      \rho_s \\
+      \rho u \\
+      \rho v \\
+      \rho w \\
+      \rho E \\
+      \rho  e_V 
+    \end{bmatrix},\;\;
+    \bv{V} =
+    \begin{bmatrix}
+      \rho_s \\
+      \rho u \\
+      \rho v \\
+      \rho w \\
+      \rho H \\
+      \rho  e_V 
+    \end{bmatrix} =
+    \begin{bmatrix}
+      \rho_s \\
+      \rho u \\
+      \rho v \\
+      \rho w \\
+      \rho E + P \\
+      \rho  e_V 
+    \end{bmatrix}
+\end{gather*}
+then the transformation matrix is
+\begin{equation}
+  \large
+  \bt{A}_H=\pdv{\bv{V}}{\bv{U}} =
+  \begin{bmatrix}
+    \bt{\text{I}}_{N_s} & 0 & 0 & 0 & 0 & 0 \\
+    0 & 1 & 0 & 0 & 0 & 0 \\
+    0 & 0 & 1 & 0 & 0 & 0 \\
+    0 & 0 & 0 & 1 & 0 & 0 \\
+    \pdv{P}{\rho_s} &  \pdv{P}{\rho u} &  \pdv{P}{\rho v} &  \pdv{P}{\rho w} & \left(1 + \pdv{P}{\rho E}\right) & \pdv{P}{\rho e_V} \\
+    0 & 0 & 0 & 0 & 0 & 1
+  \end{bmatrix}
+\end{equation}
+where $\bt{\text{I}}_{N_s}$ denotes the $N_s \times N_s$ identity matrix.
+
+\subsection{Dirichlet Temperature Boundary Condition Transformation Matrices}
+Dirichlet boundary conditions may be posed on other variables besides the conserved variables $\bv{U}$.  In this situation it is convenient to transform between changes in the conserved variables, $\delta\bv{U}$, to changes in a more convenient set of ``wall variables,'' $\delta\bv{V}_{wall}$.  Specifically, if we choose
+\begin{gather*}
+    \delta\bv{U} = \delta
+    \begin{bmatrix}
+      \rho_s \\
+      \rho u \\
+      \rho v \\
+      \rho w \\
+      \rho E \\
+      \rho  e_V 
+    \end{bmatrix},\;\;
+    \delta\bv{V}_{wall} = \delta
+    \begin{bmatrix}
+      \rho_s \\
+      \rho u \\
+      \rho v \\
+      \rho w \\
+      T \\
+      T_V 
+    \end{bmatrix}
+\end{gather*}
+then the transformation matrix is
+\begin{equation}
+  \large
+  \bt{C}=\pdv{\bv{V}_{wall}}{\bv{U}} =
+  \begin{bmatrix}
+    \bt{\text{I}}_{N_s} & 0 & 0 & 0 & 0 & 0 \\
+    0 & 1 & 0 & 0 & 0 & 0 \\
+    0 & 0 & 1 & 0 & 0 & 0 \\
+    0 & 0 & 0 & 1 & 0 & 0 \\
+    \pdv{T}{\rho_s}   &  \pdv{T}{\rho u}   &  \pdv{T}{\rho v}   &  \pdv{T}{\rho w}  & \pdv{T}{\rho E}   & \pdv{T}{\rho e_V} \\
+    \pdv{T_V}{\rho_s} &  \pdv{T_V}{\rho u} &  \pdv{T_V}{\rho v} &  \pdv{T_V}{\rho w} & \pdv{T_V}{\rho E} & \pdv{T_V}{\rho e_V}
+  \end{bmatrix}
+\end{equation}
+and its inverse is 
+\begin{equation}
+  \large
+  \bt{C}^{-1}=\pdv{\bv{U}}{\bv{V}_{wall}} =
+  \begin{bmatrix}
+    \bt{\text{I}}_{N_s} & 0 & 0 & 0 & 0 & 0 \\
+    0 & 1 & 0 & 0 & 0 & 0 \\
+    0 & 0 & 1 & 0 & 0 & 0 \\
+    0 & 0 & 0 & 1 & 0 & 0 \\
+    \pdv{\rho E}{\rho_s}   &  \pdv{\rho E}{\rho u}   &  \pdv{\rho E}{\rho v}   &  \pdv{\rho E}{\rho w}  & \pdv{\rho E}{T}   & \pdv{\rho E}{T_V} \\
+    \pdv{\rho e_V}{\rho_s} &  \pdv{\rho e_V}{\rho u} &  \pdv{\rho e_V}{\rho v} &  \pdv{\rho e_V}{\rho w} & \pdv{\rho e_V}{T} & \pdv{\rho e_V}{T_V}
+  \end{bmatrix}
+\end{equation}
+where $\bt{\text{I}}_{N_s}$ denotes the $N_s \times N_s$ identity matrix.  The elements of $\bt{C}$ have already been derived in Section~\ref{app:viscous_flux_jacobians}.  The elements of $\bt{C}^{-1}$, however, must be constructed from the independent variables $\bv{V}_{wall}$, that is
+\begin{align}
+  \rho E   &= \rho E\left(\rho_s, \rho u_k, T, T_V\right) \label{eq:rE_as_fn_of_TTv} \\
+  \rho e_V &= \rho e_V\left(\rho_s, \rho u_k, T, T_V\right) \label{eq:reV_as_fn_of_TTv}
+\end{align}
+Beginning with~\eqref{eq:reV_as_fn_of_TTv}, we have
+\begin{align*}
+  \rho e_V &= \sum_{r=1}^{N_s} \rho_r e^{\text{vib}}_r + \sum_{r=1}^{N_s} \rho_r e^{\text{elec}}_r  \\
+           &= \sum_{r=1}^{N_s} \rho_r e_{V,r} \\
+   \rho e_V &= \sum_{r=1}^{N_s} \rho_r e_{V,r}\left(T_V\right)
+\end{align*}
+from which is is clear that
+\begin{equation}
+  \boxed{\pdv{}{\rho_s}\left(\rho e_V\right) = e_{V,s}}
+\end{equation}
+and
+\begin{align*}
+  \pdv{}{T_V}\left(\rho e_V\right) &= \sum_{r=1}^{N_s} \rho_r \pdv{e_{V,r}}{T_V} \\
+                                   &= \sum_{r=1}^{N_s} \rho_r C_{V,r}^V
+\end{align*}
+or
+\begin{equation}
+  \boxed{\pdv{}{T_V}\left(\rho e_V\right) = \rho \bar{C}_V^V}
+\end{equation}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Inviscd Flux Eigendecomposition\label{app:inviscd_flux_eigendecomposition}}
+\subsection{Diagonalization of a 1D Hyperbolic System}
+It is instructive as background to consider the diagonalization of a hyperbolic system in one dimension.  Consider the model problem
+\begin{equation}
+  \pdv{\bv{U}}{t} + \pdv{}{x} \bv{F}\left(\bv{U}\right) = \bv{0}
+\end{equation}
+which can be rewritten using the chain rule as
+\begin{equation}
+  \pdv{\bv{U}}{t} + \bt{A} \pdv{\bv{U}}{x} = \bv{0}
+\end{equation}
+where $\bt{A}=\pdv{\bv{F}}{\bv{U}}$ is the inviscid flux Jacobian.  Let us introduce the characteristic variables $\hat{\bv{U}}$ and associated transformation $\delta\hat{\bv{U}} = \pdv{\hat{\bv{U}}}{\bv{U}} \delta\bv{U}$.  Finally let us denote the transformation matrices $\bt{M}^{-1}=\pdv{\hat{\bv{U}}}{\bv{U}}$ and  $\bt{M}=\pdv{\bv{U}}{\hat{\bv{U}}}$  between conserved and characteristic varaibles.  We can then rewrite the model problem as
+\begin{align*}
+  \bt{M}^{-1} \pdv{\bv{U}}{t} &+ \bt{M}^{-1} \bt{A} \pdv{\bv{U}}{x} = \bv{0} \\
+  \bt{M}^{-1} \pdv{\bv{U}}{t} &+ \bt{M}^{-1} \bt{A} \bt{M} \bt{M}^{-1} \pdv{\bv{U}}{x} = \bv{0} \\
+  \bt{M}^{-1} \pdv{\bv{U}}{t} &+ \bt{\Lambda} \bt{M}^{-1} \pdv{\bv{U}}{x} = \bv{0} \\
+  \pdv{\hat{\bv{U}}}{t} &+ \bt{\Lambda} \pdv{\hat{\bv{U}}}{x} = \bv{0}
+\end{align*}
+where $\bt{\Lambda}=\bt{M}^{-1} \bt{A} \bt{M}$ is a diagonal matrix of the eigenvalues of $\bt{A}$. In one dimension transformation to the characteristic variables decouples the governing partial differential equations.  In higher dimensions the inviscid Euler equations cannot be diagonalized in general, but we can always form a diagonalization of this form for a specific direction. 
+
+
+\subsection{Diagonalization of Multidimensional Systems}
+Consider now the inviscid flux in the direction specified by $\hat{\bv{n}}$ of a multidimensional laminar flow in thermochemical nonequilibrium described with a two-temperature model:
+\begin{equation}
+  \bv{F}_n \equiv \bv{F}\cdot\hat{\bv{n}} = \bv{F}_i\hat{\bv{n}}_i
+\end{equation}
+where $\hat{\bv{n}}$ is a unit vector and $\bv{F}_i$ is the inviscid flux in the $i$\textsuperscript{th} coordinate direction. Let us denote the inviscid flux Jacoban as
+\begin{equation}
+  \bt{A}_n \equiv \pdv{\bv{F}_n}{\bv{U}}
+\end{equation}
+then the eigendecomposition of $\bt{A}_n$ is given by
+\begin{equation}
+  \bt{A}_n = \bt{L}\bt{\Lambda}\bt{R}
+\end{equation}
+where $\bt{\Lambda}$ is a diagonal matrix of eigenvalues, and  $\bt{L}$ is the column matrix of right eigenvectors, and $\bt{R}$ is the row matrix of left eigenvectors, with $\bt{L}\bt{R}=\bt{I}$.  
+
+To aid in the construction of $\bt{L}$, $\bt{\Lambda}$, and $\bt{R}$ it is useful to introduce two additional, orthogonal unit vectors $\hat{\bv{t}}_1$ and $\hat{\bv{t}}_2$ in the plane normal to $\hat{\bv{n}}$.  These vectors are arbitraty so long as the set is $\left(\hat{\bv{n}},\hat{\bv{t}_1},\hat{\bv{t}_2}\right)$ orthonormal.  Following then the work of Gnoffo et al.~\cite{gnoffo_conservation_laws}, let us introduce varaibles useful in defining the transformation:
+\begin{align*}
+  c_s &= \rho_s/\rho\;\;\;\mbox{the mass fraction of species $s$} \\
+  \bv{u} &= \left(u,v,w\right)\;\;\;\mbox{the Cartesian velocity components} \\
+  q^2 &= u^2+v^2+w^2 \\
+  U &= \bv{u}\cdot\hat{\bv{n}} \\
+  V &= \bv{u}\cdot\hat{\bv{t}_1} \\
+  W &= \bv{u}\cdot\hat{\bv{t}_2}  \\
+  \tilde{\gamma}_s &= \pdv{P}{\rho_s}\;\;\;\mbox{given by~\eqref{eq:dPdrhos_tcneq} or~\eqref{eq:dPdrhos_teq}} \\
+  \beta &= \pdv{P}{\rho E}\;\;\;\mbox{given by~\eqref{eq:dPdrE_tcneq} or~\eqref{eq:dPdrE_teq}} \\
+  \phi &= \pdv{P}{\rho e_V}\;\;\;\mbox{given by~\eqref{eq:dPdreV_tcneq}} \\
+  a &= \sqrt{\left(1 + \beta\right)\frac{P}{\rho}}\;\;\;\mbox{the frozen speed of sound} \\
+  H &= \mbox{ the total enthalpy}
+\end{align*}
+The diagonal matrix of eigenvalues is then given by
+\begin{equation}
+\bt{\Lambda} =
+\begin{bmatrix}
+  \bt{U}_{N_s} & 0 & 0 & 0   & 0 & 0 \\
+      0 & U & 0 & 0   & 0 & 0 \\
+      0 & 0 & U & 0   & 0 & 0 \\
+      0 & 0 & 0 & U+a & 0 & 0 \\
+      0 & 0 & 0 & 0   & U-a & 0 \\
+      0 & 0 & 0 & 0   & 0   & U
+\end{bmatrix}
+\end{equation}
+where the notation $\bt{U}_{N_s}=U\bt{I}_{N_s}$ indicates a diagonal matrix of size $N_s$ with $U$ on the diagonal, where $N_s$ is the number of chemical species.
+
+The matrix 
+\Large
+\begin{equation}
+\bt{L}=
+\begin{bmatrix}
+  \frac{\delta_{sr}}{a^2}                         & 0             & 0            & \frac{c_s}{2a^2}          & \frac{c_s}{2a^2}          & 0 \vspace{.5em} \\
+  \frac{u}{a^2}                                   & \hat{t}_{1,x} & \hat{t}_{2,x} & \frac{u+a\hat{n}_x}{2a^2} & \frac{u-a\hat{n}_x}{2a^2} & 0 \vspace{.5em} \\
+  \frac{v}{a^2}                                   & \hat{t}_{1,y} & \hat{t}_{2,y} & \frac{v+a\hat{n}_y}{2a^2} & \frac{v-a\hat{n}_y}{2a^2} & 0 \vspace{.5em} \\ 
+  \frac{w}{a^2}                                   & \hat{t}_{1,z} & \hat{t}_{2,z} & \frac{w+a\hat{n}_z}{2a^2} & \frac{w-a\hat{n}_z}{2a^2} & 0 \vspace{.5em} \\
+  \frac{\beta q^2 - \tilde{\gamma}_r}{\beta a^2}  & V             & W            & \frac{H+aU}{2a^2}         & \frac{H-aU}{2a^2}        & -\frac{\phi}{\beta a^2} \vspace{.5em} \\
+  0                                               & 0             & 0            & \frac{e_V}{2a^2}          & \frac{e_V}{2a^2}         & \frac{1}{a^2}
+\end{bmatrix}
+\label{eq:eigen_decomposition_L}
+\end{equation}
+\normalsize
+
+The matrix 
+\large
+\begin{equation}
+\bt{R}=
+\begin{bmatrix}
+  a^2\delta_{sr}-c_s\tilde{\gamma}_r               & \beta u c_s           & \beta v c_s           & \beta w c_s          & \beta c_s   & -\phi c_s \vspace{.5em} \\
+  -V                                              & \hat{t}_{1,x}         & \hat{t}_{1,y}          & \hat{t}_{1,z}         & 0           & 0         \vspace{.5em} \\
+  -W                                              & \hat{t}_{2,x}         & \hat{t}_{2,y}          & \hat{t}_{2,z}         & 0           & 0         \vspace{.5em} \\
+  \tilde{\gamma}_r-Ua                             & -\beta u + a\hat{n}_x & -\beta v + a\hat{n}_y & -\beta w + a\hat{n}_z & \beta      & \phi       \vspace{.5em} \\  
+  \tilde{\gamma}_r+Ua                             & -\beta u - a\hat{n}_x & -\beta v - a\hat{n}_y & -\beta w - a\hat{n}_z & \beta      & \phi       \vspace{.5em} \\  
+  -e_V\tilde{\gamma}_r                            & \beta u e_V           & \beta v e_V           & \beta w e_V           & -\beta e_V & a^2 - \phi e_V
+\end{bmatrix}
+\label{eq:eigen_decomposition_R}
+\end{equation}
+\normalsize
+In equations~\eqref{eq:eigen_decomposition_L}--\eqref{eq:eigen_decomposition_R} index $s$ denotes the row and $r$ the column for each of the chemical species.  Thus the first element in each matrix is expanded to fill $s=1,2,\ldots,N_s$ rows and $r=1,2,\ldots,N_s$ columns.
+
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\bibliography{paper}
+\bibliographystyle{unsrt}

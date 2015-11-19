@@ -1,0 +1,741 @@
+\chapter[Ablation]{Ablation \\ \vspace{1em}  \huge{\textit{The Charring Ablator and Thermal Protection Implicit System Solver (CATPISS)}}}
+
+Cite Amar~\cite{amar_thesis}
+
+\section{Mathematical Model}
+\subsection{Governing Equations}
+The equations that govern the solid/gas system of the porous charring
+ablator include energy and mass conservation equations for the solid as well 
+as the Navier-Stokes equations as applied to all of the gaseous species considered.
+\ In the general case, it is possible that the pyrolysis gases react with
+the remaining solid, or deposit residue (coke) on the
+solid, but these phenomena are neglected. \ Under the assumptions that the
+pyrolysis gas is in thermochemical equilibrium, the solid and gas are in
+thermal equilibrium, and there is no in-depth energy source, then the solid
+and gas energy equations for a stationary grid reduce to a mixture energy
+equation given by
+\begin{equation}
+  \pdv{\left(\rho e_{o} \right)}{t} = \grad{}\cdot\left(\widetilde{\textbf{k}} \grad{T}\right) - \grad{}\cdot\left(\phi \rho_g h_{o_{g}} \textbf{v}_g \right) + \dot{Q}
+  \label{eq:pde_abl_thermal}
+\end{equation}
+where $\rho$, $e_{o}$, $\phi$, $h_{o}$, $\textbf{v}$, and $\dot{Q}$ denote density, total energy, porosity, total enthalpy, velocity, and volumetric energy source respectively,
+and the subscript $g$ denotes a quantity with respect to the pyrolysis gases.  The velocity of the pyrolysis gases is governed by a porous flow law such as Darcy's law. Since ablators in general can be anisotropic materials, the thermal conductivity, $\widetilde{\textbf{k}}$, is a second order tensor.
+The solid mass conservation equation is simply
+\begin{equation}
+  \pdv{\rho_s}{t} = \dot{m}_s
+  \label{eq:pde_abl_solid_mass_conservation}
+\end{equation}
+If it is assumed that all solid decomposition results in pyrolysis gas generation and that the gases are free to flow through the porous medium,
+then the gas mass conservation equation is given by
+\begin{equation}
+  \pdv{\left(\phi \rho_g\right)}{t} = - \dot{m}_s - \grad{}\cdot\left(\phi \rho_g \textbf{v}_g \right)
+  \label{eq:pde_abl_gass_mass_conservation}
+\end{equation}
+Before manipulating the governing equations to yield a form suitable for implementation in a finite-element framework, it is first necessary to discuss the material model that will characterize the two-phase system.
+\subsection{Material Model}
+In order to sufficiently explain the governing equations and boundary
+conditions, it is important to understand the material model used to
+characterize the state of the solid/gas mixture. \ It is assumed that all
+the pores are interconnected, and therefore pyrolysis gases occupy all of
+the pore space and are free to flow through it. \ Consequently, the density
+of the solid/gas mixture is described by%
+\begin{equation}
+\rho =\phi \rho _{g}+\rho _{s}  
+\label{mixture density}
+\end{equation}%
+where the solid density is a bulk\ density, the gas density is a
+density with respect to the space the gas occupies (pore space), and the porosity is equal to the gas volume fraction. \ In terms of
+units, Eq. \ref{mixture density} can be expressed as 
+\begin{equation}
+\overset{{\Huge \rho }}{\overbrace{\frac{\text{{\small [total mass]}}}{%
+\text{{\small [total vol]}}}}}{\small =}\overset{{\Huge \phi }}{\overbrace{%
+\frac{\text{{\small [pore vol]}}}{\text{{\small [total vol]}}}}}\overset{%
+{\Huge \rho }_{g}}{\overbrace{\frac{\text{{\small [gas mass]}}}{\text{%
+{\small [pore vol]}}}}}{\small +}\overset{{\Huge \rho }_{s}}{\overbrace{%
+\frac{\text{{\small [solid mass]}}}{\text{{\small [total vol]}}}}}
+\end{equation}
+It is assumed that the thermodynamic state of the pyrolysis gases can be
+described as a mixutre of perfect gases, and that the solid and gas phases are in
+thermal equilibrium resulting in 
+\begin{equation}
+T_{g}=T_{s}=T
+\end{equation}
+\begin{equation}
+P= f\left(\rho _{g},T\right)
+\end{equation}%
+
+The solid material model adopted in this study\ is similar to the model developed by Moyer and Rindal (need citation)
+ but has been expanded to include an arbitrary number of components, $nc$. \ The solid bulk density is given by
+\begin{equation}
+\rho _{s}= \sum_{i=1}^{nc} \Gamma_i \rho_i
+\label{solid density}
+\end{equation}%
+where $\Gamma_i$ is the volume fraction of the $i^{th}$ component in the virgin composite and is therefore constant. 
+The units associated with the solid bulk density model in Eq. \ref
+{solid density}\ are
+\begin{equation}
+\overset{{\Huge \rho }_{s}}{\overbrace{\frac{\text{{\small [solid mass]}}}{%
+\text{{\small [total vol]}}}}}=\sum_{i=1}^{nc} \overset{{\Huge \Gamma_{i} }}{\overbrace{\frac{%
+\text{{\small [initial vol of $i^{th}$ comp.]}}}{\text{{\small [total vol]}}}}}
+\overset{{\Huge \rho_{i} }}{\overbrace{\frac{%
+\text{{\small [mass of $i^{th}$ comp.]}}}{\text{{\small [initial vol of $i^{th}$ comp.]}}}}}
+\end{equation}
+It is assumed that the solid does not change volume due to thermal
+expansion, and therefore the total volume is constant. \ It is important
+to note that the solid description in Eq. \ref{solid density} is only a
+modeling assumption, and the solid is not truly comprised of $nc$
+components, species, or distinguishable materials. \ This modeling assumption comes as a result of
+decomposition data obtained from thermogravimetric analyses (TGA). \ It has
+been observed that phenolic resins undergo a two-stage decomposition process
+that can be appropriately captured by a two resin component model (need citation).
+
+It is assumed that all decomposed solid mass results in gas mass generation,
+and the general model of the decomposition process is described by%
+\begin{equation*}
+\text{virgin plastic }\Longrightarrow \text{ char + gas}
+\end{equation*}%
+This is a generalized description of the initial and final states of the
+system between which there are transitional states. \ The reaction is irreversible, and the pyrolysis gases are assumed
+to be in thermochemical equilibrium and do not react with the remaining solid in the pore space.
+
+Taking the temporal derivative of Eq. \ref{solid density} gives the solid
+decomposition rate in terms of component decomposition rates.%
+\begin{equation}
+\frac{\partial \rho _{s}}{\partial t}= \sum_{i=1}^{nc} \Gamma_i \frac{\partial \rho _{i}}{\partial t}
+\label{kinetic relationship sum}
+\end{equation}%
+It is assumed that the decomposition of each component can be described by
+an Arrhenius relationship of the form%
+\begin{equation}
+\frac{\partial \rho _{i}}{\partial t}=-k_{i}\rho _{v_{i}}\left( \frac{\rho
+_{i}-\rho _{c_{i}}}{\rho _{v_{i}}}\right) ^{\psi _{i}}e^{-E_{i}/RT}\text{
+for }i=A\text{, }B\text{, and }C  \label{kinetic relationship}
+\end{equation}%
+which applies at a constant spatial location (as apposed to a given node which can move during the solution process).
+
+Since most thermophysical properties of the solid are only known for the
+virgin plastic and fully charred states, the intermediate solid is modeled
+as some interpolated state between virgin and char. \ This interpolated
+state is characterized by the extent of reaction $\left( \beta \right) $, or
+degree of char, given by%
+\begin{equation}
+\beta =\frac{\rho _{v}-\rho _{s}}{\rho _{v}-\rho _{c}}
+\label{extent of reaction definition}
+\end{equation}%
+where the virgin and char bulk densities are known constants. \ It is
+evident that as the solid decomposes from virgin to char, the extent of
+reaction ranges from $0$ to $1$. \ The definition in Eq. \ref{extent of
+reaction definition}\ can be rearranged to more clearly describe the
+interpolated state.%
+\begin{equation}
+\rho _{s}=\left( 1-\beta \right) \rho _{v}+\beta \rho _{c}
+\label{rearranged degree of char}
+\end{equation}%
+Although the virgin and char materials are not distinguishable entities
+within the intermediate solid, Eq. \ref{rearranged degree of char} reveals
+that the degree of char represents an effective char volume fraction
+within the solid (not in the solid/gas mixture). \ In a similar light, CMA
+defines an effective virgin mass fraction given by%
+\begin{equation}
+y_{v}=\frac{\rho _{v}}{\rho _{v}-\rho _{c}}\left( 1-\frac{\rho _{c}}{\rho
+_{s}}\right)
+\end{equation}%
+which can be related to the extent of reaction through%
+\begin{equation}
+y_{v}=\frac{\rho _{v}}{\rho _{s}}\left( 1-\beta \right)
+\end{equation}%
+Similarly the char mass fraction is given by%
+\begin{equation}
+y_{c}=1-y_{v}=\frac{\rho _{c}}{\rho _{s}}\beta
+\end{equation}%
+These effective parameters are used to determine several solid and mixture
+properties.
+
+\subsection{Porous Flow Laws}
+Applying the Navier-Stokes momentum equations to flow through the char layer
+would require detailed knowledge of the pore structure, and that information
+is typically not known.  Consequently, a porous flow law can be used as a simplified momentum equation that can be substituted
+directly into the mass and energy conservation equations.  Porous flow laws typically require extra knowledge about
+the material beyond thermophysical properties.  These properties include the porosity, $\phi$, and permeability, $\kappa$
+of the solid, as well as the viscosity, $\mu$, of the gas flowing through the porous medium.  The porosity and permeability can be determined through
+material testing and is provided to \textit{CATPISS} as a function of extent of reaction, $\beta$, which is given by Eq. \ref{extent of reaction definition}.
+\subsubsection{Darcy's Law}
+In 1856, Darcy (cite Darcy) published results from a series
+of experiments in which he determined how the volumetric flow rate, $\boldsymbol{Q}$, of a
+laminar flowing fluid relates to the local pressure gradient within a fully
+saturated porous medium.
+\begin{equation}
+\boldsymbol{Q}=-A\dfrac{\widetilde{\boldsymbol{\kappa}} }{\mu }\grad{P}
+\end{equation}%
+where $\widetilde{\boldsymbol{\kappa}}$ is the anisotropic permeability tensor. The superficial or filtration velocity is the volumetric flow rate averaged
+over the cross-sectional area of the medium and is given by%
+\begin{equation}
+\mathbf{v}^{\prime }_{g} =\frac{\boldsymbol{Q}}{A}=-\frac{\widetilde{\boldsymbol{\kappa}} }{\mu }\grad{P}
+\end{equation}%
+The average or seepage velocity of the fluid is the volumetric flow rate
+averaged over the cross-sectional area through which the fluid can flow
+(porous area) and is given by%
+\begin{equation}
+\mathbf{v}_{g} =\frac{\boldsymbol{Q}}{\phi A}=-\frac{\widetilde{\boldsymbol{\kappa}} }{\phi \mu }\grad{P}
+\end{equation}%
+which assumes that the surface porosity is equal to the volumetric porosity.
+\ Darcy's law is valid for steady laminar flows with "sufficiently" low Reynolds
+numbers.  The seepage velocity can be use to determine the gas mass flux at any point within the medium according to
+\begin{equation}
+  \dot{m}_{g} = \left( \phi \rho_{g} \right) \mathbf{v}_g = -\left( \phi \rho_{g} \right)\frac{ \widetilde{\boldsymbol{\kappa}}}{\phi \mu }\grad{P}
+\end{equation}%
+Moving all terms to the LHS and simplifying gives
+\begin{equation}
+  \phi\mu \mathbf{v}_g + \widetilde{\boldsymbol{\kappa}}\grad{P} = 0
+\end{equation}%
+
+\subsection{Property Models}
+\subsubsection{Internal Energy and Enthalpy}
+The total internal energy and of the system can be described by
+\begin{equation}
+\rho e_{o} = \left(1 - \beta \right)\rho_{v} e_{v} + \beta \rho_{c} e_{c} + \phi \rho_{g} e_{o_{g}}
+\end{equation}
+where
+\begin{equation}
+e_{v/c} = h_{v/c} = h_{v/c}^{o} + \int_{T_{o}}^{T} C_{p_{v/c}}\left(T^{\prime}\right)dT^{\prime}
+\end{equation}
+and the total energy of the gas is
+\begin{equation}
+e_{o_{g}} = e_{g}^{o} + \int_{T_{o}}^{T} C_{v_{g}}\left(T^{\prime}\right)dT^{\prime} + \frac{1}{2} \left( \mathbf{v}_{g} \cdot \mathbf{v}_{g} \right)
+\end{equation}
+Similarly, the total enthalpy of the gas is
+\begin{equation}
+h_{o_{g}} = h_{g}^{o} + \int_{T_{o}}^{T} C_{p_{g}}\left(T^{\prime}\right)dT^{\prime} + \frac{1}{2} \left( \mathbf{v}_{g} \cdot \mathbf{v}_{g} \right)
+\end{equation}
+\subsubsection{Thermal Conductivity}
+The thermal conductivity is in general an anisotropic function of temperature.  The thermal conductivity tensor is given by
+\begin{equation}
+\widetilde{\textbf{k}}\left(T\right) = \left[ \begin{matrix}
+k_{11}\left(T\right) & k_{12}\left(T\right) & k_{13}\left(T\right) \\
+k_{21}\left(T\right) & k_{22}\left(T\right) & k_{23}\left(T\right) \\
+k_{31}\left(T\right) & k_{32}\left(T\right) & k_{33}\left(T\right) \end{matrix} \right]
+\end{equation}
+where each component of the tensor can be an independent function of temperature.  For materials with anisotropies not aligned with coordinate axes, an additional transformation matrix must be introduced to appropriately apply the model. 
+The thermal conductivity of the mixture is assumed to be a mass weighted average of virgin char and gas.
+\begin{equation}
+k = \frac{\left(1 - \beta\right) \rho_{v}}{\rho}k_{v} + \frac{\beta \rho_{c}}{\rho} k_{c} + \frac{\phi \rho_{g}}{\rho}k_{g}
+\end{equation}
+\subsubsection{Permeability}
+The permeability is in general an anisotropic function of the extent of reaction defined by Eq. \ref{extent of reaction definition}.  The permeability tensor is given by
+\begin{equation}
+\widetilde{\boldsymbol{\kappa}}\left(\beta\right) = \left[ \begin{matrix}
+\kappa_{11}\left(\beta\right) & \kappa_{12}\left(\beta\right) & \kappa_{13}\left(\beta\right) \\
+\kappa_{21}\left(\beta\right) & \kappa_{22}\left(\beta\right) & \kappa_{23}\left(\beta\right) \\
+\kappa_{31}\left(\beta\right) & \kappa_{32}\left(\beta\right) & \kappa_{33}\left(\beta\right) \end{matrix} \right]
+\end{equation}
+where each component of the tensor can be an independent function of extent of reaction.  For materials with anisotropies not aligned with coordinate axes, an additional transformation matrix must be introduced to appropriately apply the model.
+\subsubsection{Porosity}
+The porosity is in general a function of extend of reaction defined by Eq. \ref{extent of reaction definition} and represents the gas mass fraction since all of the pore space is assumed to be interconnected.
+\begin{equation}
+  \phi = \phi\left(\beta\right)
+\end{equation}
+\subsection{Galerkin Weak Statement}
+Given the material model, the governing equations can be manipulated to give
+\begin{multline}
+  \text{Energy:} \left[\rho C_{v} - \rho_{g}^{2} \pdv{\phi}{T}\pdv{e_{g}}{\rho_{g}} \right]\pdv{T}{t} + \left[ \rho_{g} \pdv{e_{g}}{\rho_{g}} + e_{o_{g}} \right]\pdv{\left(\phi\rho_{g}\right)}{t} + \left(\phi\rho_{g}\right) \mathbf{v}_{g} \cdot \pdv{\mathbf{v}_{g}}{t} + \bar{e}\pdv{\rho_{s}}{t}
+\\ - \grad{}\cdot\left(\widetilde{\textbf{k}} \grad{T}\right) + \grad{}\cdot\left(\phi \rho_g h_{o_{g}} \textbf{v}_g \right) - \dot{Q} = 0
+  \label{eq:pde_abl_thermal2}
+\end{multline}
+\begin{equation}
+  \text{Momentum: } \phi\mu\left(v_{g}\right)_{k} + \widetilde{\boldsymbol{\kappa}}_{k} \cdot \grad{P} = 0 \text{ for $k = 1...$ \# dim}
+  \label{eq:pde_abl_momentum}
+\end{equation} 
+\begin{equation}
+  \text{Solid Mass: } \pdv{\rho_s}{t} - \dot{m}_s = 0
+  \label{eq:pde_abl_solid_mass_conservation2}
+\end{equation}
+and
+\begin{equation}
+  \text{Gas Mass: } \pdv{\left(\phi \rho_g\right)}{t} + \pdv{\rho_s}{t} + \grad{}\cdot\left(\phi \rho_g \mathbf{v}_g \right) = 0
+  \label{eq:pde_abl_gass_mass_conservation2}
+\end{equation}
+where
+\begin{equation}
+  \rho C_{v} = \left(1 - \beta \right)\rho_{v} C_{v_{v}} + \beta \rho_{c} C_{v_{c}} + \phi \rho_{g} C_{v_{g}}
+\end{equation}
+and
+\begin{equation}
+  \bar{e} = \frac{\rho_{v} e_{v} - \rho_{c} e_{c}}{\rho_{v} - \rho_{c}}
+\end{equation}
+and
+\begin{equation}
+  h_{o_{g}} = h_{g}\left(\rho_{g},T\right) + \frac{\mathbf{v}_{g} \cdot \mathbf{v}_{g}}{2}
+\end{equation}
+
+Since the model equation for $\dot{m}_{s}$ is known, the solid mass conservation equation (Eq. \ref{eq:pde_abl_solid_mass_conservation2}) will be substituted into the energy and gas mass conservation equations.
+Consequently, the solution procedure will be to solve for the temperature, velocity, and gas density fields through integration of the PDEs given in Eqs. \ref{eq:pde_abl_thermal2}, \ref{eq:pde_abl_momentum}, and \ref{eq:pde_abl_gass_mass_conservation2}
+while the solid density will be treated as a nonlinearity, and the resulting ODE governing the solid density evolution will be numerically integrated.
+\subsubsection{Energy Equation}
+A Galerkin weak statement can be developed for the energy equation (Eq. \ref{eq:pde_abl_thermal2}) by first multiplying it by a suitable test function, $v$,
+and integrating over the domain $\Omega$ while integrating the $\text{5}^{th}$ and $\text{6}^{th}$ terms by parts to give the natural boundary condition terms.
+\begin{multline}
+  \int_{\Omega} \left[ v \left( \rho C_{v} - \rho_{g}^{2} \pdv{\phi}{T}\pdv{e_{g}}{\rho_{g}}\right)\pdv{T}{t} + v \bar{e} \dot{m}_{s} + v \left(\rho_{g} \pdv{e_{g}}{\rho_{g}} + e_{o_{g}}\right) \pdv{\left( \phi \rho_{g} \right)}{t} \right] d\Omega 
+\\ + \int_{\Omega} \left[ \sum_{k=1}^{\text{\# dim}} v \left( \phi \rho_{g} \right) \left(v_{g}\right)_{k} \pdv{\left(v_{g}\right)_{k}}{t} + \grad{v} \cdot \left(\widetilde{\textbf{k}}  \grad{T} \right) - \grad{v} \cdot \left( \phi \rho_{g} h_{o_{g}} \mathbf{v}_g \right) - v\dot{Q} \right] d \Omega 
+\\ + \oint_{\Gamma} \left(  v h_{o_{g}} \dot{m}_{w} + v \dot{q}_{w} \right) d \Gamma = 0 \hspace{2eM} \forall v \in H_0^1 \hspace{10eM}
+ \label{eq:pde_abl_thermal_galerkin}
+\end{multline}
+where the boundary (wall) mass flux is
+\begin{equation}
+  \dot{m}_{w} = \left( \phi \rho_{g} \right) \mathbf{v}_{g} \cdot \hat{\textbf{n}}
+\end{equation}
+and the boundary heat flux is
+\begin{equation}
+  \dot{q}_{w} = - \widetilde{\textbf{k}} \grad{T} \cdot \hat{\textbf{n}}
+\end{equation}
+\subsubsection{Momentum Equations}
+For the $k^{th}$ momentum equation we again multiply by a suitable test function, $v$, and integrate over the domain
+\begin{equation}
+  \int_{\Omega} v \phi\mu\left(v_{g}\right)_{k} d \Omega + \int_{\Omega} v \widetilde{\boldsymbol{\kappa}}_{k} \cdot \grad{P} d \Omega = 0 \hspace{2eM} \forall v \in H_0^1
+\end{equation} 
+Since the porous flow law is simply a contraint equation, the is no need to integrate by parts to develop natural boundary condition terms.  However it is necessary to use the chain rule to get the gradient term in terms of independent variables.
+\begin{equation}
+  \grad P = \pdv{P}{T} \grad T + \pdv{P}{\rho_g} \grad{\rho_g}
+\end{equation}
+Expanding $\grad \rho_g$ in terms of the independent variables gives
+\begin{equation}
+  \grad \rho_g = \pdv{\rho_g}{T} \grad T + \pdv{\rho_g}{\left(\phi \rho_g\right)} \grad{\left(\phi\rho_g\right)}
+\end{equation}
+where
+\begin{equation}
+  \pdv{\rho_{g}}{\left(\phi\rho_{g}\right)} = \frac{1}{\phi}
+\end{equation}
+and
+\begin{equation}
+  \pdv{\rho_{g}}{T} = -\frac{\rho_{g}}{\phi}\pdv{\phi}{T}
+\end{equation}
+The pressure gradient can now be written as
+\begin{equation}
+  \grad P = \left(\pdv{P}{T} - \frac{\rho_{g}}{\phi} \pdv{\phi}{T} \pdv{P}{\rho_g}  \right) \grad T  + \frac{1}{\phi} \pdv{P}{\rho_{g}} \grad{\left(\phi\rho_{g}\right)}
+\end{equation}
+The final form of the veloctiy constraint equations is
+\begin{equation}
+  \int_{\Omega} v \phi\mu\left(v_{g}\right)_{k} d \Omega - \int_{\Omega} v \widetilde{\boldsymbol{\kappa}}_{k} \cdot \left[ \left(\pdv{P}{T} - \frac{\rho_{g}}{\phi} \pdv{\phi}{T} \pdv{P}{\rho_g}  \right) \grad T  + \frac{1}{\phi} \pdv{P}{\rho_{g}} \grad{\left(\phi\rho_{g}\right)} \right] d \Omega = 0 \hspace{2eM} \forall v \in H_0^1
+\label{eq:pde_abl_momentum_galerkin}
+\end{equation} 
+
+\subsubsection{Gas Mass Conservation Equation}
+Likewise, a Galerkin weak statement can be developed for the gas mass conservation equation (Eq. \ref{eq:pde_abl_gass_mass_conservation2}).
+Again, the equation will be multiplied  by a suitable test function, $v$, and integrated over the domain $\Omega$ while integrating the
+$\text{3}^{rd}$ term by parts to give the natural boundary condition term.
+\begin{equation}
+  \int_{\Omega} \left( \pdv{\left( \phi \rho_{g} \right)}{t} v - \grad{v} \cdot \left( \phi \rho_{g} \mathbf{v}_{g} \right)  + \dot{m}_{s} v \right) d \Omega + \oint_{\Gamma} \dot{m}_{w} v d \Gamma = 0 \hspace{2eM} \forall v \in H_0^1
+  \label{eq:pde_abl_gass_mass_conservation_galerkin}
+\end{equation}
+
+\subsection{Finite Element Formulation}
+Eqs. \ref{eq:pde_abl_thermal_galerkin}, \ref{eq:pde_abl_momentum_galerkin},  and \ref{eq:pde_abl_gass_mass_conservation_galerkin} can be discretized by expanding the independent variables and test functions in terms of a finite dimensional basis
+\begin{equation}
+  T_{h}\left(\bv{x}\right) = \sum_{j=1}^{\text{\# nodes}} T_{j} \psi_{j}\left(\bv{x}\right)
+  \label{eq:T_of_x}
+\end{equation}
+
+\begin{equation}
+  \left( \phi \rho_{g} \right)_{h}\left(\bv{x}\right) = \sum_{j=1}^{\text{\# nodes}} \left( \phi \rho_{g} \right)_{j} \psi_{j}\left(\bv{x}\right)
+\end{equation}
+
+\begin{equation}
+  \left[\left(v_{g}\right)_{k}\right]_{h}\left(\bv{x}\right) = \sum_{j=1}^{\text{\# nodes}} \left[\left(v_{g}\right)_{k}\right]_{j} \psi_{j}\left(\bv{x}\right)
+\end{equation}
+
+\begin{equation}
+  v_{h}\left(\bv{x}\right) = \sum_{i=1}^{\text{\# nodes}} v_{i} \psi_{i}\left(\bv{x}\right)
+\end{equation}
+where the subscript $h$ is introduced to denote a finite dimensional approximation.  Since the unknowns are no longer functions of $\bv{x}$, the PDE system reduces to an ODE system in which the temporal derivatives can be defined as
+
+\begin{equation}
+  \pdv{T_{h}}{t} = \sum_{j=1}^{\text{\# nodes}} \dot{T}_{j} \psi_{j}\left(\bv{x}\right) \text{   where   } \dot{T}_{j} = \frac{d}{dt} \left( T_{j} \right)
+\end{equation}
+\begin{equation}
+  \pdv{\left( \phi \rho_{g} \right)_{h}}{t} = \sum_{j=1}^{\text{\# nodes}} \dot{\left( \phi \rho_{g} \right)}_{j} \psi_{j}\left(\bv{x}\right) \text{   where   } \dot{\left( \phi \rho_{g} \right)}_{j} = \frac{d}{dt} \left( \phi \rho_{g} \right)_{j}
+\end{equation}
+\begin{equation}
+  \pdv{\left[\left(v_{g}\right)_{k}\right]_{h}}{t} = \sum_{j=1}^{\text{\# nodes}} \dot{\left[\left(v_{g}\right)_{k}\right]}_{j} \psi_{j}\left(\bv{x}\right) \text{   where   } \dot{\left[\left(v_{g}\right)_{k}\right]}_{j} = \frac{d}{dt} \left(\left[\left(v_{g}\right)_{k}\right]_{j} \right)
+\end{equation}
+Since the equation system should be satisfied for all combinations of nodal shape function coefficients, $v_{i}$, their choice is arbitrary as long as a unique combination is chosen for each node. For the $l^{th}$ nodal equation $v_{i} = 1$ for $i = l$ and $v_{i} = 0$ for $i \neq l$.  Consequently, Eqs. \ref{eq:pde_abl_thermal_galerkin}, \ref{eq:pde_abl_momentum_galerkin}, and \ref{eq:pde_abl_gass_mass_conservation_galerkin} can now become
+\begin{multline}
+  \sum_{j=1}^{\text{\# nodes}} \dot{T}_{j} \int_{\Omega} \left[ \rho C_{v} - \rho_{g}^{2} \pdv{\phi}{T}\pdv{e_{g}}{\rho_{g}} \right]\psi_{i} \psi_{j} d \Omega + \sum_{j=1}^{\text{\# nodes}} \dot{\left( \phi \rho_{g} \right)}_{j} \int_{\Omega} \left[ \rho_{g} \pdv{e_{g}}{\rho_{g}} + e_{o_{g}}\right] \psi_{i} \psi_{j} d \Omega
+  \\ + \sum_{k=1}^{\text{\# dim}} \sum_{j=1}^{\text{\# nodes}} \dot{\left[\left(v_{g}\right)_{k}\right]}_{j} \int_{\Omega} \left( \phi \rho_{g} \right) \left(v_{g}\right)_{k} \psi_{i} \psi_{j}  d \Omega
+  + \sum_{j=1}^{\text{\# nodes}} T_{j} \int_{\Omega} \grad{\psi_{i}} \cdot \widetilde{\textbf{k}} \grad{\psi_{j}} d \Omega \hspace{3eM}
+  \\ - \sum_{j=1}^{\text{\# nodes}} \left( \phi \rho_{g} \right)_{j} \int_{\Omega} h_{o_{g}} \psi_{j} \grad{\psi_{i}} \cdot \mathbf{v}_{g} d \Omega
+  + \int_{\Gamma} \psi_{i} q_{w} d \Gamma + \int_{\Gamma} \psi_{i} h_{o_{g}} \dot{m}_{w} d \Gamma + \int_{\Omega} \psi_{i} \left(\bar{e} \dot{m}_{s} - \dot{Q} \right) d \Omega  = 0 \hspace{0.5eM}
+\end{multline}
+\begin{equation}
+  \sum_{j=1}^{\text{\# nodes}} \left[\left(v_{g}\right)_{k}\right]_{j} \int_{\Omega} \phi\mu\psi_{i} \psi_{j} d \Omega + \int_{\Omega} \psi_{i} \widetilde{\boldsymbol{\kappa}}_{k} \cdot \grad P d \Omega = 0 
+\end{equation}
+and
+\begin{equation}
+  \sum_{j=1}^{\text{\# nodes}} \dot{\left( \phi \rho_{g} \right)}_{j} \int_{\Omega} \psi_{i} \psi_{j} d \Omega 
+  - \sum_{j=1}^{\text{\# nodes}} \left( \phi \rho_{g} \right)_{j} \int_{\Omega} \grad{\psi_{i}} \cdot \psi_{j} \mathbf{v}_g d \Omega + \int_{\Gamma} \psi_{i} \dot{m}_{w} d \Gamma + \int_{\Omega} \psi_{i} \dot{m}_{s} d \Omega = 0 \hspace{14eM}
+\end{equation}
+for $i$ = 1,2,...,\# nodes. These can more concisely be written as
+\begin{equation}
+  \sum_{j=1}^{\text{\# nodes}} \left[\dot{T}_{j} M^{T,T}_{ij} 
+  + \dot{\left( \phi \rho_{g} \right)}_{j} M^{T,\rho}_{ij} 
+  + \sum_{k=1}^{\text{\# dim}} \dot{\left[\left(v_{g}\right)_{k}\right]}_{j} M^{T,v}_{ij} 
+  + T_{j} K^{T,T}_{ij} 
+  + \left( \phi \rho_{g} \right)_{j} K^{T,\rho}_{ij} \right] 
+  + F^{T}_{i} = 0
+  \label{eq:ablation_concise_energy_eqn}
+\end{equation}
+\begin{equation}
+  \sum_{j=1}^{\text{\# nodes}} \left[\left(v_{g}\right)_{k}\right]_{j} K^{v,v}_{ij} 
+  +  F^{v}_{ik} = 0 \text{ for $k = 1...$ \# dim}
+  \label{eq:ablation_concise_momentum_eqn}
+\end{equation}
+\begin{equation}
+  \sum_{j=1}^{\text{\# nodes}} \left[ \dot{\left( \phi \rho_{g} \right)}_{j} M^{\rho,\rho}_{ij} 
+  + \left( \phi \rho_{g} \right)_{j} K^{\rho,\rho}_{ij} \right] 
+  + F^{\rho}_{i} = 0
+  \label{eq:ablation_concise_gas_eqn}
+\end{equation}
+for $i$ = 1,2,...,\# nodes. Where
+\begin{equation}
+  M^{T,T}_{ij} = \int_{\Omega} \left[ \rho C_{v} - \rho_{g}^{2} \pdv{\phi}{T}\pdv{e_{g}}{\rho_{g}} \right] \psi_{i} \psi_{j} d \Omega
+  \label{eq:first_integral}
+\end{equation}
+\begin{equation}
+  M^{T,\rho}_{ij} = \int_{\Omega} \left[ \rho_{g} \pdv{e_{g}}{\rho_{g}} + e_{o_{g}}\right] \psi_{i} \psi_{j} d \Omega
+\end{equation}
+\begin{equation}
+  M^{T,v}_{ij} = \int_{\Omega} \left( \phi \rho_{g} \right) \left(v_{g}\right)_{k} \psi_{i} \psi_{j}  d \Omega
+\end{equation}
+\begin{equation}
+  K^{T,T}_{ij} = \int_{\Omega} \grad{\psi_{i}} \cdot \widetilde{\textbf{k}} \grad{\psi_{j}} d \Omega
+\end{equation}
+\begin{equation}
+  K^{T,\rho}_{ij} = - \int_{\Omega} h_{o_{g}} \psi_{j} \grad{\psi_{i}} \cdot \mathbf{v}_{g} d \Omega
+\end{equation}
+\begin{equation}
+  F^{T}_{i} = \int_{\Omega} \psi_{i} \left(\bar{e} \dot{m}_{s} - \dot{Q} \right) d \Omega + \int_{\Gamma} \psi_{i} q_{w} d \Gamma + \int_{\Gamma} \psi_{i} h_{o_{g}} \dot{m}_{w} d \Gamma
+  \label{eq:energy_bc}
+\end{equation}
+\begin{equation}
+  K^{v,v}_{ij} = \int_{\Omega} \phi\mu\psi_{i} \psi_{j} d \Omega
+\end{equation}
+\begin{equation}
+  F^{v}_{ik} = \int_{\Omega} \psi_{i} \widetilde{\boldsymbol{\kappa}}_{k} \cdot \grad P d \Omega
+\end{equation}
+\begin{equation}
+  M^{\rho,\rho}_{ij} = \int_{\Omega} \psi_{i} \psi_{j} d \Omega
+\end{equation}
+\begin{equation}
+   K^{\rho,\rho}_{ij} = - \int_{\Omega} \psi_{j} \grad{\psi_{i}} \cdot \mathbf{v}_g d \Omega 
+\end{equation}
+\begin{equation}
+  F^{\rho}_{i} = \int_{\Gamma} \psi_{i} \dot{m}_{w} d \Gamma + \int_{\Omega} \psi_{i} \dot{m}_{s} d \Omega
+  \label{eq:last_integral}
+\end{equation}
+
+
+\subsection{Time Discretization}
+The semidiscrete weak form of the system given by Eqs. \ref{eq:ablation_concise_energy_eqn} and \ref{eq:ablation_concise_gas_eqn} is discretized in time using backwards finite difference schemes.  Both first and second-order accurate in time schemes may be derived from Taylor series expansions in time about $\bv{U}_h\left(t_{n+1}\right)=\bv{U}_{n+1}$:
+\begin{align}
+  \bv{U}_n     = \bv{U}_{n+1} &+ \pdv{\bv{U}_{n+1}}{t}\left(t_n-t_{n+1}\right) + \pdtwov{\bv{U}_{n+1}}{t}\frac{\left(t_n-t_{n+1}\right)^2}{2} + \mathcal{O}\left(\left(t_n-t_{n+1}\right)^3\right) \nonumber \\
+%                              & \nonumber \\
+  \bv{U}_{n-1} = \bv{U}_{n+1} &+ \pdv{\bv{U}_{n+1}}{t}\left(t_{n-1}-t_{n+1}\right) + \pdtwov{\bv{U}_{n+1}}{t}\frac{\left(t_{n-1}-t_{n+1}\right)^2}{2} + \mathcal{O}\left(\left(t_{n-1}-t_{n+1}\right)^3\right) \nonumber
+\end{align}
+These expressions can be manipulated as in~\cite{benkirk_dissertation,fins_ijnmf} to create difference formulas of the form
+\begin{equation}
+  \pdv{\bv{U}_{n+1}}{t} = \alpha_t \bv{U}_{n+1} + \beta_t \bv{U}_n + \gamma_t \bv{U}_{n-1} + \mathcal{O}\left(\Delta t_{n+1}^p\right)
+  \label{eq:udot_thee_pt_backward}
+\end{equation}
+to yield either a first or second-order accurate scheme.  The weights $\alpha_t$, $\beta_t$, and $\gamma_t$ are given for $p=1$ and $p=2$ in Table~\ref{table:udot_weights}.
+\begin{table}[hbtp]
+  \begin{center}
+    \caption{First and second-order accurate time discretization coefficients.\label{table:udot_weights}}
+    \vspace{.2em}
+    %\large
+    \begin{tabular}{c||ccc}
+      $\bv{p}$ & $\bv{\alpha_t}$ & $\bv{\beta_t}$ & $\bv{\gamma_t}$ \\ \hline\hline
+           &          &         & \\
+       1  & $\frac{1}{\Delta t_{n+1}}$ & $\frac{-1}{\Delta t_{n+1}}$ & 0 \\
+ %         &          &         & \\
+       2  & $-\beta_t - \gamma_t$ 
+          & $-\left[\frac{1}{\Delta t_{n+1}} + \frac{1}{\Delta t_n}\right]$
+          & $\frac{\Delta t_{n+1}}{\Delta t_n\left(\Delta t_{n+1} + \Delta t_n\right)}$ 
+    \end{tabular}
+  \end{center}
+\end{table}
+
+The resulting equation system is
+\begin{multline}
+  \sum_{j=1}^{\text{\# nodes}} \left\{ \left(\alpha_t M^{T,T}_{ij} + K^{T,T}_{ij} \right) T^{n+1}_j  + \left( \alpha_t M^{T,\rho}_{ij} +  K^{T,\rho}_{ij} \right) \left( \phi \rho_{g} \right)^{n+1}_{j} + \sum_{k=1}^{\text{\# dim}} \alpha_t M^{T,v}_{ij} \left[\left(v_{g}\right)_{k}\right]_{j} \right\}
+  \\ + \sum_{j=1}^{\text{\# nodes}} \left\{\beta_t M^{T,T}_{ij}  T^{n}_j   + \beta_t  M^{T,\rho}_{ij}    \left( \phi \rho_{g} \right)^{n}_{j}   + \sum_{k=1}^{\text{\# dim}} \beta_t  M^{T,v}_{ij} \left[\left(v_{g}\right)_{k}\right]_{j}     \right\} 
+  \\ + \sum_{j=1}^{\text{\# nodes}} \left\{\gamma_t M^{T,T}_{ij} T^{n-1}_j + \gamma_t M^{T,\rho}_{ij} \left( \phi \rho_{g} \right)^{n-1}_{j} + \sum_{k=1}^{\text{\# dim}} \gamma_t M^{T,v}_{ij} \left[\left(v_{g}\right)_{k}\right]_{j}   \right\} + F^{T}_{i} = 0 = \mathcal{R}^{T}_{i}
+  \label{eq:abl_energy_time_int}
+\end{multline}
+ 
+\begin{equation}
+  \sum_{j=1}^{\text{\# nodes}} K^{v,v}_{ij} \left[\left(v_{g}\right)_{k}\right]_{j}^{n+1} + F^{v}_{ik} = 0 = \mathcal{R}^{v}_{i} \text{ for $k = 1...$ \# dim}
+  \label{eq:abl_momentum_time_int}
+\end{equation}
+
+\begin{multline}
+  \sum_{j=1}^{\text{\# nodes}} \left\{\left(\alpha_t M^{\rho,\rho}_{ij} + K^{\rho,\rho}_{ij} \right) \left( \phi \rho_{g} \right)^{n+1}_{j} +
+  \beta_t M^{\rho,\rho}_{ij} \left( \phi \rho_{g} \right)^{n}_{j} + 
+      \gamma_t M^{\rho,\rho}_{ij} \left( \phi \rho_{g} \right)^{n-1}_{j}\right\} + F^{\rho}_{i} = 0 = \mathcal{R}^{\rho}_{i}
+  \label{eq:abl_gas_time_int}
+\end{multline}
+for $i$ = 1,2,...,\# nodes, where $\mathcal{R}_{i}$ denotes the $i^{th}$ nonlinear nodal residual equations which is driven to machine zero during the iteration process.  The integrals in Eqs. \ref{eq:first_integral}-\ref{eq:last_integral} are evaluated with $T^{n+1}$ and $\left( \phi \rho_{g} \right)^{n+1}$.
+
+\subsection{Linearization}
+Through the iteration process the nodal residual equations in Eqs. \ref{eq:abl_energy_time_int}, \ref{eq:abl_momentum_time_int}, and \ref{eq:abl_gas_time_int} will be driven to machine zero so that the governing equations are satisfied in a discrete sense.  To aid in the iterative process, it is necessary to linearize the residual equations in iteration space.  This will be done according to the familiar Taylor-series expansion
+\begin{equation}
+  \mathcal{R}^{\nu+1}_{i} = \mathcal{R}^{\nu}_{i} + \sum_{j=1}^{\text{\# nodes}} \left\{ \left. \pdv{\mathcal{R}_{i}}{T_{j}}\right\vert^{\nu}\Delta T_{j} + \left. \pdv{\mathcal{R}_{i}}{\left( \phi \rho_{g} \right)_{j}}\right\vert^{\nu}\Delta \left( \phi \rho_{g} \right)_{j} + \sum_{k=1}^{\text{\# dim}} \left. \pdv{\mathcal{R}_{i}}{\left[\left(v_{g}\right)_{k}\right]_{j}}\right\vert^{\nu}\Delta \left[\left(v_{g}\right)_{k}\right]_{j}  \right\} + \text{higher order terms}
+  \label{residual_taylor_series}
+\end{equation}
+where the superscript $\nu$ has been introduced to denote iteration level and 
+\begin{equation}
+  \Delta \left(\right)_{j} = \left(\right)_{j}^{\nu+1} - \left(\right)_{j}^{\nu}
+\end{equation}
+ Keep in mind that the Jacobian terms, $ \pdv{\mathcal{R}_{i}}{\left(\right)_{j}}$, are only nonzero if nodes $i$ and $j$ share an element.
+
+Since the intent of \textit{CATPISS} is to allow for easy addition of material models and porous flow laws, the Jacobians will not be derived analytically yet they will be calculated exactly (to machine precision) using the complex-step method.  The implementation of the complex-step method does not disallow the use of analytically derived Jacobian terms (or some mix of the two), so these terms can be replaced with analytical expressions at a later date if desired.  
+
+The residuals can be expanded according to a Taylor-series expansion in independent variable space about a point $\left[T,\left(\phi \rho_{g} \right),\mathbf{v}_g\right]$. For example let's do the expansion in temperature space and take a complex step , $i\Delta T$.
+\begin{multline}
+  \mathcal{R}\left[T+i\Delta T,\left(\phi \rho_{g} \right),\mathbf{v}_g\right] = \mathcal{R}\left[T,\left(\phi \rho_{g} \right),\mathbf{v}_g\right] + i\pdv{\mathcal{R}}{T}\left(\Delta T\right) - \frac{1}{2} \pdv{^{2}\mathcal{R}}{T^{2}}\left(\Delta T\right)^{2}  - \frac{i}{6} \pdv{^{3}\mathcal{R}}{T^{3}}\left(\Delta T\right)^{3} + \text{ higher order terms}
+\label{complex_step}
+\end{multline}
+Now looking at just the imaginary part and ignoring the higher order terms gives
+\begin{equation}
+  Im\left\{ \mathcal{R}\left[T+i\Delta T,\left(\phi \rho_{g} \right),\mathbf{v}_g\right] \right\} = \pdv{\mathcal{R}}{T} \Delta T - \frac{1}{6} \pdv{^{3}\mathcal{R}}{T^{3}}\left(\Delta T\right)^{3} 
+\end{equation}
+Solving for the first derivative gives the Jacobian terms
+\begin{equation}
+  \pdv{\mathcal{R}}{T} = \frac{Im\left\{ \mathcal{R}\left[T+i\Delta T,\left(\phi \rho_{g} \right),\mathbf{v}_g \right] \right\}}{\Delta T} + \mathcal{O}\left[\left(\Delta T \right)^{2} \right]
+\end{equation}
+This process can be repeated for each independent variable. The proper choice for the perturbation steps is not immediately obvious from looking at the equations.  In general, the perturbation step should have some relationship to the order of magnitude of the independent variable.
+\begin{equation}
+  \Delta \left(\right) = r \left(\right)
+\end{equation}
+Taking advantage of the fact that the problem will be solved on a finite precision machine, $r$ can be chosen so that the second order error terms in the Jacobian expressions are smaller the smallest orders represented in the first terms.  Consequently, the derivatives will be accurate to machine precision.  Having such a small step does not affect the division operation in the first term because multiplication/division operations simply result in an exponent shift.  Choosing $r = 10^{-16}$ for a double precision calculation will accomplish this.
+
+For each node, the calculation of all of the Jacobian terms will require
+\begin{center}
+$\left[\text{\# Residual Calcs}\right] = \left[1 + \left(\text{\# other nodes on common elements}\right)\right]\times\left[ \text{\# d.o.f.} \right]$
+\end{center}
+complex residual calculations where \# dof is the number of degrees of freedom, which is 2 for the current system.  The scope of the residual recalculations can be reduced by only recalculating those terms that depend on the degree of freedom with the current complex perturbation.  One fortuitous aspect of this method is that there is no separate residual calculation required for the unperturbed state.  If only one independent variables is perturbed (use $T$ for example), then the real part of Eq. \ref{complex_step} can be solved for the residual
+\begin{equation}
+  \mathcal{R}\left[T,\left(\phi \rho_{g} \right),\mathbf{v}_g\right] = Real\left\{\mathcal{R}\left[T+i\Delta T,\left(\phi \rho_{g} \right),\mathbf{v}_g \right] \right\} + \mathcal{O}\left[\left(\Delta T \right)^{2} \right]
+\end{equation}
+Again since the independent variable perturbation has been chosen to be sufficiently small, the order of magnitude of the error terms is smaller than the smallest order represented in the complex-step residual calculation.  This results in a residual calculation exact to machine precision.
+
+The advantage of the complex-step method is in the development cost.  The derivation, implementation, and debugging of analytical Jacobian terms can be time consuming.  Plus, the addition and/or modification of models with the complex-step method can be accomplished with relative ease.  The drawbacks are the extra time spent doing complex arithmetic, and the extra storage required for complex variables. 
+
+\subsection{Boundary Conditions}
+\textit{CATPISS} can handle a rich suite of boundary conditions, including multiple flux type boundary conditions that can be summed over a given boundary.  \textit{CATPISS} currently accepts EXODUSII (reference) unstructured grid files including side set definitions for boundary conditions.  In the current implementation, a side set can be thought of as a collection of one or more boundary conditions that is defined for each subdomain exterior boundary.  For example, a subdomain exterior boundary may have a Dirichlet (specified temperature) condition (1 boundary condition) or an Neumann (specified flux) condition (1 boundary condition) imposed on it.  Alternatively, the boundary could be exposed to a convective environment with shock-layer radiation and far-field reradiation (3 boundary conditions) at the same time.  In addition, \textit{CATPISS} has the ability to handle both constant and time-dependent boundary conditions each with their own input nomenclature.  Internally, \textit{CATPISS} converts constant boundary conditions to time-dependent conditions so that their application within the element assembly routines can use the same logic.
+\subsubsection{Specified Temperature}
+Dirichlet conditions and other conditions that require the substitution of a nodal residual equation with a boundary condition specific equation will be imposed via the penalty boundary method (PBM) (reference). with this method, the $L2$ projection of the residuals are added to the matrix. The projection is multiplied by some large factor so that, in floating point arithmetic, the existing (smaller) entries in the matrix and right-hand-side are effectively ignored. The boundary integral in the weak form becomes
+\begin{equation}
+  \frac{1}{\epsilon} \int_{\Gamma} \psi_{i} \mathcal{R} d\Gamma = 0
+  \label{eq:PBM}
+\end{equation}
+where $\epsilon << 1$. For the specified temperature condition, the residual equation is given by
+\begin{equation}
+  \mathcal{R} = T_{spec} - T_{h}\left(\bv{x}\right) = 0
+\end{equation}
+where $T_{spec}$ is the known specified temperature. Substituting in the definition of $T_{h}\left(x\right)$ in the finite dimensional basis, Eq. \ref{eq:T_of_x}, gives
+\begin{equation}
+  \mathcal{R} = T_{spec} - \sum_{j=1}^{\text{\# nodes}} T_{j} \psi_{j}\left(\bv{x}\right) = 0
+\end{equation}
+Substituting the residual definition into Eq. \ref{eq:PBM} gives the weak form of the discrete residual equations
+\begin{equation}
+\mathcal{R}_{i} = \frac{1}{\epsilon} \int_{\Gamma} \psi_{i} \left( T_{spec} - \sum_{j=1}^{\text{\# nodes}} T_{j} \psi_{j}\left(\bv{x}\right) \right) d\Gamma = 0
+\end{equation}
+Employing a numerical integration technique, such as Gaussian quadrature, to evaluate the surface integral gives
+\begin{equation}
+  \mathcal{R}_{i} = \frac{1}{\epsilon} \sum_{QP=1}^{\text{\# QPs}} \left. \left[ w \psi_{i} \left( T_{spec} - \sum_{j=1}^{\text{\# nodes}} T_{j} \psi_{j} \right) \right]\right\vert_{QP}
+\label{weak_spec_temp_residual}
+\end{equation}
+where $QP$ denotes the quadrature point and $w$ is the integration weight.
+Linearizing in iteration space according to a Taylor-series expansion while ignoring higher order terms gives
+\begin{equation}
+  \mathcal{R}^{\nu+1}_{i} = \mathcal{R}^{\nu}_{i} + \sum_{j=1}^{\text{\# nodes}} \left. \pdv{\mathcal{R}_{i}}{T_{j}}\right\vert^{\nu}\Delta T_{j}
+\end{equation}
+Differentiating Eq. \ref{weak_spec_temp_residual} gives the Jacobian terms for the linear system
+\begin{equation}
+  \pdv{\mathcal{R}_{i}}{T_{j}} = -\frac{w}{\epsilon} \psi_{i} \psi_{j}
+\end{equation}
+Given the ease of the Jacobian derivation, this boundary condition has been implemented using analytical Jacobians as opposed to using the complex perturbation approach.
+\subsubsection{Specified Heat Flux}
+The specified flux boundary condition is linear and requires no Jacobian contributions.   The boundary heat flux term in Eq. \ref{eq:energy_bc} becomes
+\begin{equation}
+  \int_{\Gamma} \psi_{i} q_{w} d \Gamma = - \int_{\Gamma} \psi_{i} q_{spec} d \Gamma
+\end{equation}
+where $q_{spec}$ is the known specified flux. Note that the sign change is intended to simplify usability.  In the original PDE derivation, fluxes into the body were considered a negative quantity.  So the sign change allows the user to input a positive heat flux when the intent is to put heat into the body.
+Introducing Gaussian quadrature for numerical integration gives
+\begin{equation}
+  -\int_{\Gamma} \psi_{i} q_{spec} d \Gamma = \sum_{QP=1}^{\text{\# QPs}} -w q_{spec} \psi_{i}
+\end{equation}
+\subsubsection{Convection}
+The convective heat flux is given by
+\begin{equation}
+  q_{conv} = h \left(T_{rec} - T_{w}\right)
+\end{equation}
+Substituting into Eq. \ref{eq:energy_bc} gives
+\begin{equation}
+  \int_{\Gamma} \psi_{i} q_{w} d \Gamma = - \int_{\Gamma} \psi_{i} h\left(T_{rec} - T_{w}\right) d \Gamma
+\end{equation}
+Introducing Gaussian quadrature for numerical integration and the finite dimensional basis representation of temperature gives
+\begin{equation}
+  - \int_{\Gamma} \psi_{i} h \left(T_{rec} - T_{w}\right) d \Gamma = \sum_{QP=1}^{\text{\# QPs}} \left. \left[ -w \psi_{i} h\left(T_{rec} - \sum_{j=1}^{\text{\# nodes}} T_{j} \psi_{j}\left(\bv{x}\right)\right)\right]\right\vert_{QP}
+\end{equation}
+The Jacobian contributions for the convective boundary condition are calculated using the complex perturbation method.
+\subsubsection(Specified Pressure)
+Since the independent variables in the linear system are temperature and gas density, the specified pressure condition is nonlinear and must be applied through the PBM method to replace the appropriate gas density residual equations in the linear system.  An additional complication is introduced because the energy equation requires a mass flux at the surface to complete the energy balance.  Consequently the surface mass flux must be backed out from the known data.  Before boundary conditions are applied, but after the
+
+\section{Governing Equation Derivation}
+\subsection{Energy Equation}
+The thermochemical equilibrium energy equation describing the charring porous ablator with pyrolysis gas flow on a stationary grid is
+\begin{equation}
+  \pdv{\left(\rho e_{o} \right)}{t} - \grad{}\cdot\left(\widetilde{\textbf{k}} \grad{T}\right) + \grad{}\cdot\left(\phi \rho_g h_{o_{g}} \textbf{v}_g \right) - \dot{Q}= 0
+\end{equation}
+where
+\begin{equation}
+  \rho e_{o} = \left(1-\beta\right)\rho_{v}e_{v}+\beta\rho_{c}e_{c}+\phi\rho_{g}e_{o_{g}}
+\end{equation}
+The virgin and char internal energies are equal to the virgin and char enthalpies respectively and are given by
+\begin{equation}
+  e_{v/c} = h_{v/c} = h_{v/c}^{o} + \int_{T^{o}}^{T} C_{v_{v/c}}\left(T^{\prime}\right)dT^{\prime}
+\end{equation}
+and the gas total energy is given by
+\begin{equation}
+  e_{o_{g}} = e_{g}\left(\rho_{g},T\right) + \frac{\mathbf{v}_{g} \cdot \mathbf{v}_{g}}{2}
+\end{equation}
+$\beta$ is called the ``degree of char'' or ``extent of reaction'' and is defined to be
+\begin{equation}
+  \beta =\frac{\rho _{v}-\rho _{s}}{\rho _{v}-\rho _{c}}
+\end{equation}
+which represents the char volume fraction within the virgin/char mixture.  While there are no distinct virgin and char materials in the solid, the extent of reaction is introduced as a modelling assumption to weight thermal properties in the decomposition region since only virgin and char properties are known.
+The extent of reaction definition can be rearranged to give the solid density
+\begin{equation}
+  \rho _{s}=\left( 1-\beta \right) \rho _{v}+\beta \rho _{c}
+\end{equation}%
+and the total mixture density is given by
+\begin{equation}
+\rho =\phi \rho _{g}+\rho _{s}  
+\end{equation}
+Using the chain rule to evaluate the temporal derivative in the energy equation we have
+\begin{equation}
+  \pdv{\left(\rho e_{o} \right)}{t} = \left(1-\beta\right)\rho_{v}C_{v_{v}}\pdv{T}{t} + \beta\rho_{c}C_{v_{c}}\pdv{T}{t} + \phi\rho_{g}\pdv{e_{o_{g}}}{t} + e_{o_{g}}\pdv{\left(\phi\rho_{g}\right)}{t}+ \bar{e}\pdv{\rho_{s}}{t}
+  \label{eq:rhoe_o_derivative}
+\end{equation}
+where
+\begin{equation}
+  \bar{e} = \frac{\rho_{v}e_{v}-\rho_{c}e_{c}}{\rho_{v}-\rho_{c}}
+\end{equation}
+Concentrating now on the temporal derivative of the gas total energy we have
+\begin{equation}
+  \pdv{e_{o_{g}}}{t} = \pdv{e_{g}}{t} + \mathbf{v}_{g} \cdot \pdv{\mathbf{v}_{g}}{t}
+  \label{eq:e_o_g}
+\end{equation}
+where
+\begin{equation}
+  \pdv{e_{g}}{t} = C_{v_{g}}\pdv{T}{t} + \pdv{e_{g}}{\rho_{g}} \pdv{\rho_{g}}{t}
+\end{equation}
+In the solution process, the gas density is a nonlinear function of both $T$ and $\left(\phi\rho_{g}\right)$ given by
+\begin{equation}
+  \rho_{g} = \frac{\left(\phi\rho_{g}\right)}{\phi}
+\end{equation}
+and consequently
+\begin{equation}
+  \pdv{\rho_{g}}{t} = \pdv{\rho_{g}}{\left(\phi\rho_{g}\right)} \pdv{\left(\phi\rho_{g}\right)}{t} + \pdv{\rho_{g}}{T}\pdv{T}{t}
+\end{equation}
+Performing the necessary differentiation gives
+\begin{equation}
+  \pdv{\rho_{g}}{\left(\phi\rho_{g}\right)} = \frac{1}{\phi}
+\end{equation}
+and
+\begin{equation}
+  \pdv{\rho_{g}}{T} = -\frac{\left(\phi\rho_{g}\right)}{\phi^{2}}\pdv{\phi}{T}
+\end{equation}
+Substituting into Eq. \ref{eq:e_o_g} and collecting terms gives
+\begin{equation}
+  \pdv{e_{o_{g}}}{t} = \left(C_{v_{g}} -  \frac{\left(\phi\rho_{g}\right)}{\phi^{2}}\pdv{\phi}{T}\pdv{e_{g}}{\rho_{g}}\right)\pdv{T}{t} + \frac{1}{\phi}\pdv{e_{g}}{\rho_{g}}\pdv{\left(\phi\rho_{g}\right)}{t} + \mathbf{v}_{g} \cdot \pdv{\mathbf{v}_{g}}{t}
+\end{equation}
+Substituting back into Eq. \ref{eq:rhoe_o_derivative} gives
+\begin{multline}
+  \pdv{\left(\rho e_{o_{g}}\right)}{t} = \left[\left(1-\beta\right)\rho_{v}C_{v_{v}} + \beta\rho_{c}C_{v_{c}} + \left(\phi\rho_{g}\right)\left( C_{v_{g}} -  \frac{\left(\phi\rho_{g}\right)}{\phi^{2}}\pdv{\phi}{T}\pdv{e_{g}}{\rho_{g}}\right) \right]\pdv{T}{t} 
+\\ + \left[\frac{\left(\phi\rho_{g}\right)}{\phi}\pdv{e_{g}}{\rho_{g}} + e_{o_{g}} \right]\pdv{\left(\phi\rho_{g}\right)}{t} 
+\\ + \left(\phi\rho_{g}\right) \mathbf{v}_{g} \cdot \pdv{\mathbf{v}_{g}}{t} + \bar{e}\pdv{\rho_{s}}{t}
+\end{multline}
+Further simplyfying gives
+\begin{equation}
+  \pdv{\left(\rho e_{o_{g}}\right)}{t} = \left[\rho C_{v} - \rho_{g}^{2} \pdv{\phi}{T}\pdv{e_{g}}{\rho_{g}} \right]\pdv{T}{t} + \left[ \rho_{g} \pdv{e_{g}}{\rho_{g}} + e_{o_{g}} \right]\pdv{\left(\phi\rho_{g}\right)}{t} + \left(\phi\rho_{g}\right) \mathbf{v}_{g} \cdot \pdv{\mathbf{v}_{g}}{t} + \bar{e}\pdv{\rho_{s}}{t}
+\end{equation}
+where
+\begin{equation}
+  \rho C_{v} = \left(1 - \beta \right)\rho_{v} C_{v_{v}} + \beta \rho_{c} C_{v_{c}} + \phi \rho_{g} C_{v_{g}}
+\end{equation}
+In summary, the final form of the energy equation is
+\begin{multline}
+  \left[\rho C_{v} - \rho_{g}^{2} \pdv{\phi}{T}\pdv{e_{g}}{\rho_{g}} \right]\pdv{T}{t} + \left[ \rho_{g} \pdv{e_{g}}{\rho_{g}} + e_{o_{g}} \right]\pdv{\left(\phi\rho_{g}\right)}{t} + \left(\phi\rho_{g}\right) \mathbf{v}_{g} \cdot \pdv{\mathbf{v}_{g}}{t} + \bar{e}\pdv{\rho_{s}}{t}
+\\ - \grad{}\cdot\left(\widetilde{\textbf{k}} \grad{T}\right) + \grad{}\cdot\left(\phi \rho_g h_{o_{g}} \textbf{v}_g \right) - \dot{Q}= 0
+\end{multline}
+where
+\begin{equation}
+  \rho C_{v} = \left(1 - \beta \right)\rho_{v} C_{v_{v}} + \beta \rho_{c} C_{v_{c}} + \phi \rho_{g} C_{v_{g}}
+\end{equation}
+\begin{equation}
+  h_{o_{g}} = h_{g}\left(\rho_{g},T\right) + \frac{\mathbf{v}_{g} \cdot \mathbf{v}_{g}}{2}
+\end{equation}
+and
+\begin{equation}
+  \bar{e} = \frac{\rho_{v}e_{v}-\rho_{c}e_{c}}{\rho_{v}-\rho_{c}}
+\end{equation}
+
+\subsection{Momentum Equations}
+The momentum equations will be simplified through the use of porous flow laws.  There are several different options, but Darcy's law will be used for initial development purposes.
+\subsubsection{Darcy's Law}
+Darcy's law was initially empirically developed through porous flow experiments by Darcy, and it has since been analytically derived directly from the Navier-Stokes equations.  Darcy's law governs the volumetric flow rate of a steady incompressible low Reynolds number laminar fluid flow through a uniform porous medium.  While it is recognized that the pyrolysis gas flow through the char layer is neither steady nor incompressible, Darcy's law is the simplest porous flow law and will be used for initial development.  More appropriate momentum equation models can be implemented in the future.
+
+The volumetric flow rate, $\textbf{Q}$, is given by
+\begin{equation}
+  \textbf{Q} = -A \frac{\widetilde{\boldsymbol{\kappa}}}{\mu}\grad{P}
+\end{equation} 
+Consequently, the mass flow rate is
+\begin{equation}
+  \rho_{g} \textbf{Q} = - \rho_{g} A \frac{\widetilde{\boldsymbol{\kappa}}}{\mu}\grad{P}
+\end{equation} 
+Averaging the mass flow rate over the sample are through which is flows gives the mass flux
+\begin{equation}
+  \rho_{g} \textbf{v}_{g}^{\prime} = - \rho_{g} \frac{\widetilde{\boldsymbol{\kappa}}}{\mu}\grad{P}
+\end{equation} 
+where $\textbf{v}_{g}^{\prime}$ is the superficial or filtration velocity of the gas.  If it is assumed that the surface porosity is equal to the volumetric porosity, then the average velocity (or pore veloctiy) of the gas is given by
+\begin{equation}
+ \textbf{v}_{g} = \frac{\textbf{v}_{g}^{\prime}}{\phi}
+\end{equation}
+The mass flux can now be restated in terms of the gas velocity
+\begin{equation}
+  \phi \rho_{g} \textbf{v}_{g} = - \rho_{g} \frac{\widetilde{\boldsymbol{\kappa}}}{\mu}\grad{P}
+\end{equation} 
+There will be one equation in the PDE system for each velocity component
+\begin{equation}
+  \phi \mu \left(v_{g}\right)_{k} + \widetilde{\boldsymbol{\kappa}}_{k} \cdot \grad{P} = 0
+\end{equation} 
+where $k$ represents the cartesian dimension and $\widetilde{\boldsymbol{\kappa}}_{k}$ is the $k^{th}$ row vector of the permeability tensor
+\begin{equation}
+\widetilde{\boldsymbol{\kappa}}\left(\beta\right) = \left[ \begin{matrix}
+\kappa_{11}\left(\beta\right) & \kappa_{12}\left(\beta\right) & \kappa_{13}\left(\beta\right) \\
+\kappa_{21}\left(\beta\right) & \kappa_{22}\left(\beta\right) & \kappa_{23}\left(\beta\right) \\
+\kappa_{31}\left(\beta\right) & \kappa_{32}\left(\beta\right) & \kappa_{33}\left(\beta\right) \end{matrix} \right]
+\end{equation}
+where each component is a function of the extent of reaction.
+\subsection{Gas Mass Conservation Equation}
+\begin{equation}
+  \pdv{\phi \rho_g}{t} = - \dot{m}_s - \grad{}\cdot\left(\phi \rho_g \textbf{v}_g \right)
+\end{equation}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\bibliography{paper}
+\bibliographystyle{unsrt}
+
+% LocalWords:  CATPISS Amar ablator Navier ablators Eq Moyer Rindal analyses
+% LocalWords:  thermophysical CMA Galerkin discretized Discretization linearize
+% LocalWords:  semidiscrete discretization Linearization Jacobian Jacobians
+% LocalWords:  subdomain reradiation Linearizing
